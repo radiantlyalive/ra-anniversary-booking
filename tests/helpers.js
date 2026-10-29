@@ -1,11 +1,11 @@
 // Test helpers: a fresh in-memory store and mock Momence for every test, plus tiny request builders.
-import * as store from '../netlify/functions/_lib/store.js';
-import * as mock from '../netlify/functions/_lib/momence-mock.js';
-import { sentEvents } from '../netlify/functions/_lib/klaviyo.js';
+import * as store from '../src/lib/store.js';
+import * as mock from '../src/lib/momence-mock.js';
+import { sentEvents } from '../src/lib/klaviyo.js';
 import { open } from '../config/event.config.js';
 
 process.env.BOOKING_MODE = 'mock';
-process.env.RA_STORE = 'memory';
+
 
 export async function fresh({ seedFullDay = 0, now = '2026-11-10T10:00:00+08:00' } = {}) {
   store.useStore(store.memoryStore());

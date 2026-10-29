@@ -1,11 +1,11 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { fresh, setNow, fullDayGuest, post, events, momenceState } from './helpers.js';
-import { createBooking, reconfirmUrl, reconfirmState } from '../netlify/functions/_lib/service.js';
-import { getConfig } from '../netlify/functions/_lib/config.js';
-import { readToken, signToken } from '../netlify/functions/_lib/signing.js';
-import * as mock from '../netlify/functions/_lib/momence-mock.js';
-import reconfirm from '../netlify/functions/reconfirm.js';
+import { createBooking, reconfirmUrl, reconfirmState } from '../src/lib/service.js';
+import { getConfig } from '../src/lib/config.js';
+import { readToken, signToken } from '../src/lib/signing.js';
+import * as mock from '../src/lib/momence-mock.js';
+import reconfirm from '../src/handlers/reconfirm.js';
 
 beforeEach(() => fresh({ seedFullDay: 13 }));
 

@@ -1,10 +1,10 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { fresh, fullDayGuest, idemKey, post, events, momenceState } from './helpers.js';
-import { createBooking } from '../netlify/functions/_lib/service.js';
-import contribute from '../netlify/functions/contribute.js';
-import stripeWebhook from '../netlify/functions/stripe-webhook.js';
-import { verifyWebhook, signPayload, toMinorUnits, fromMinorUnits } from '../netlify/functions/_lib/stripe.js';
+import { createBooking } from '../src/lib/service.js';
+import contribute from '../src/handlers/contribute.js';
+import stripeWebhook from '../src/handlers/stripe-webhook.js';
+import { verifyWebhook, signPayload, toMinorUnits, fromMinorUnits } from '../src/lib/stripe.js';
 
 beforeEach(() => fresh({ seedFullDay: 13 }));
 

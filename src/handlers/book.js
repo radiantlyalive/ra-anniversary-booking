@@ -7,13 +7,13 @@
 //              next: 'done'|'amount', firstName, duplicate? }
 // Errors  -> { error: closed|validation|bot|rate_limited|session_full|in_progress|... }
 // Both buttons book a FREE spot first. "Join with Donation" returns next:'amount'.
-import { json, preflight, fail, readJson, clientIp } from './_lib/http.js';
-import { safe } from './_lib/handler.js';
-import { getConfig } from './_lib/config.js';
-import { allow } from './_lib/ratelimit.js';
-import * as idem from './_lib/idempotency.js';
-import * as turnstile from './_lib/turnstile.js';
-import { createBooking } from './_lib/service.js';
+import { json, preflight, fail, readJson, clientIp } from '../lib/http.js';
+import { safe } from '../lib/handler.js';
+import { getConfig } from '../lib/config.js';
+import { allow } from '../lib/ratelimit.js';
+import * as idem from '../lib/idempotency.js';
+import * as turnstile from '../lib/turnstile.js';
+import { createBooking } from '../lib/service.js';
 
 export default safe(async (req) => {
   const pre = preflight(req); if (pre) return pre;
@@ -31,4 +31,3 @@ export default safe(async (req) => {
   const r = await idem.run('book', key, () => createBooking(body));
   return json(r.status, r.body);
 });
-export const config = { path: '/api/book' };

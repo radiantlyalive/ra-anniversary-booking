@@ -1,7 +1,7 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { fresh } from './helpers.js';
-import { getAccessToken, BASE, MomenceDocsNeeded, findOrCreateMember, book, parseWebhook } from '../netlify/functions/_lib/momence-real.js';
+import { getAccessToken, BASE, MomenceDocsNeeded, findOrCreateMember, book, parseWebhook } from '../src/lib/momence-real.js';
 
 process.env.MOMENCE_CLIENT_ID = 'cid'; process.env.MOMENCE_CLIENT_SECRET = 'csecret';
 process.env.MOMENCE_USERNAME = 'booking-page@example.com'; process.env.MOMENCE_PASSWORD = 'pw';

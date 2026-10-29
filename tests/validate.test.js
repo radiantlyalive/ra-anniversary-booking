@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateGuest, normaliseWhatsapp } from '../netlify/functions/_lib/validate.js';
+import { validateGuest, normaliseWhatsapp } from '../src/lib/validate.js';
 
 const ok = { name: 'Ayu Lestari', email: 'Ayu@Example.com', whatsapp: '+62 812-3456-7890' };
 

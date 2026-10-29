@@ -2,9 +2,9 @@ node_modules/
 .env
 .env.*
 !.env.example
-.netlify/
-.mock-data/
+.wrangler/
+.dev.vars
 public/
-netlify/functions/_lib/css.generated.js
+src/lib/css.generated.js
 .DS_Store
 coverage/

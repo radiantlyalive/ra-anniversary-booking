@@ -96,7 +96,7 @@ test('guest copy has no em dashes, en dashes, exclamation marks, emojis, hashtag
 });
 
 test('the widget script and the reconfirm page carry no guest copy of their own with banned characters', () => {
-  for (const f of ['widget/ra-booking.js', 'netlify/functions/_lib/pages.js']) {
+  for (const f of ['widget/ra-booking.js', 'src/lib/pages.js']) {
     const t = stripComments(read(f));
     assert.doesNotMatch(t, /—/, `${f}: em dash`);
     assert.doesNotMatch(t, /journey/i, `${f}: journey`);
@@ -115,7 +115,7 @@ test('donation wording is not hard-coded in the strings: it follows the open dec
 });
 
 test('Sari Hati and other open decisions are not hard-coded in code', () => {
-  for (const f of ['widget/ra-booking.js', 'config/strings.en.js', 'netlify/functions/_lib/service.js']) {
+  for (const f of ['widget/ra-booking.js', 'config/strings.en.js', 'src/lib/service.js']) {
     assert.doesNotMatch(read(f), /Sari Hati/i, `${f}: names the recipient`);
   }
 });

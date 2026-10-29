@@ -4,12 +4,12 @@
 // 200 -> { checkoutUrl }  (Stripe-hosted Checkout, linked to the booking)
 // "Skip, keep my free spot" needs no call: the free booking already stands, and a guest who
 // abandons Stripe keeps it.
-import { json, preflight, fail, readJson, clientIp } from './_lib/http.js';
-import { safe } from './_lib/handler.js';
-import { getConfig } from './_lib/config.js';
-import { allow } from './_lib/ratelimit.js';
-import * as idem from './_lib/idempotency.js';
-import { startContribution } from './_lib/service.js';
+import { json, preflight, fail, readJson, clientIp } from '../lib/http.js';
+import { safe } from '../lib/handler.js';
+import { getConfig } from '../lib/config.js';
+import { allow } from '../lib/ratelimit.js';
+import * as idem from '../lib/idempotency.js';
+import { startContribution } from '../lib/service.js';
 
 export default safe(async (req) => {
   const pre = preflight(req); if (pre) return pre;
@@ -22,4 +22,3 @@ export default safe(async (req) => {
   const r = await idem.run('contribute', key, () => startContribution(body, key));
   return json(r.status, r.body);
 });
-export const config = { path: '/api/contribute' };

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { open, openItems } from '../config/event.config.js';
-import { resolve, ConfigError } from '../netlify/functions/_lib/config.js';
+import { resolve, ConfigError } from '../src/lib/config.js';
 
 test('every open decision is a visible placeholder, none silently decided', () => {
   const ids = openItems(open).map((o) => o.id).join(' ');

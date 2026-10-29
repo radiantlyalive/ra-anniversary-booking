@@ -2,24 +2,22 @@
   "name": "ra-anniversary-booking",
   "version": "0.1.0",
   "private": true,
-  "description": "Booking widget and Netlify functions for the Radiantly Alive anniversary, 1 December 2026.",
+  "description": "Booking widget and Cloudflare Worker for the Radiantly Alive anniversary, 1 December 2026.",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "node scripts/build.mjs",
     "predev": "node scripts/build.mjs",
-    "dev": "node scripts/dev-server.mjs",
-    "dev:netlify": "npm run build && netlify dev",
+    "dev": "wrangler dev --port 8888",
     "pretest": "node scripts/build.mjs",
-    "test": "RA_STORE=memory BOOKING_MODE=mock node --test tests/*.test.js",
+    "test": "BOOKING_MODE=mock node --test tests/*.test.js",
+    "test:e2e": "node tests/e2e/widget.e2e.mjs",
     "check:config": "node scripts/check-config.mjs",
-    "check:momence": "node scripts/momence-checks.mjs",
-    "test:e2e": "node tests/e2e/widget.e2e.mjs"
-  },
-  "dependencies": {
-    "@netlify/blobs": "^8.1.0"
+    "check:momence": "node scripts/momence-checks.mjs"
   },
   "devDependencies": {
-    "netlify-cli": "^17.0.0"
+    "wrangler": "^4.155.0"
   }
 }

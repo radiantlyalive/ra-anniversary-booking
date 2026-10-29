@@ -15,6 +15,6 @@
 3. Confirm: Momence confirmed tag, Klaviyo "Anniversary Confirmed", reminder suppressed.
 4. Release: booking cancelled, waitlist moves up, next guest gets "Anniversary Moved Up".
 5. Reminder at `reconfirm.reminderAt` to anyone unconfirmed.
-6. `deadline` job after `reconfirm.deadlineAt`: release unconfirmed places, skipping contributors if configured, or list them for the team if `release` is `team-review`.
+6. `deadline` job (a Cron Trigger every 15 minutes) after `reconfirm.deadlineAt`: release unconfirmed places, skipping contributors if configured, or list them for the team if `release` is `team-review`.
 
 Single-session bookings are never released.

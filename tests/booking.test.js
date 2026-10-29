@@ -1,9 +1,9 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { fresh, setNow, guest, fullDayGuest, idemKey, post, events, bookedCount, momenceState } from './helpers.js';
-import { createBooking, publicState } from '../netlify/functions/_lib/service.js';
-import book from '../netlify/functions/book.js';
-import spots from '../netlify/functions/spots.js';
+import { createBooking, publicState } from '../src/lib/service.js';
+import book from '../src/handlers/book.js';
+import spots from '../src/handlers/spots.js';
 
 beforeEach(() => fresh({ seedFullDay: 13 }));
 
@@ -85,7 +85,7 @@ test('the cap holds: spot 50 is booked, guest 51 joins the waitlist', async () =
 });
 
 test('a waitlisted guest asking for a donation is not sent to the amount step', async () => {
-  await (await import('../netlify/functions/_lib/momence-mock.js')).fillFullDay();
+  await (await import('../src/lib/momence-mock.js')).fillFullDay();
   const r = await call(fullDayGuest(5, { intent: 'donate' }));
   assert.equal(r.body.status, 'waitlisted');
   assert.equal(r.body.next, 'done');

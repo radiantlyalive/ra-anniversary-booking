@@ -1,11 +1,11 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { fresh, setNow, fullDayGuest, guest, post, events, bookedCount, withOpen } from './helpers.js';
-import { createBooking, runDeadline, confirmSpot, handleStripeEvent, publicState } from '../netlify/functions/_lib/service.js';
-import * as mock from '../netlify/functions/_lib/momence-mock.js';
+import { createBooking, runDeadline, confirmSpot, handleStripeEvent, publicState } from '../src/lib/service.js';
+import * as mock from '../src/lib/momence-mock.js';
 import { open } from '../config/event.config.js';
 import { demoValues } from '../config/demo.values.js';
-import deadline from '../netlify/functions/deadline.js';
+import deadline from '../src/handlers/deadline.js';
 
 beforeEach(() => fresh({ seedFullDay: 0 }));
 const AFTER = '2026-11-28T12:01:00+08:00';
@@ -120,7 +120,7 @@ test('a retry never releases a guest the waitlist moved up during the first run'
   await mock.failNextCancels(1);
   await runDeadline();              // guest 1 fails, guest 2 is released, guest 3 moves up
   await runDeadline();              // retry releases guest 1 only
-  const { reconfirmState } = await import('../netlify/functions/_lib/service.js');
+  const { reconfirmState } = await import('../src/lib/service.js');
   assert.equal((await reconfirmState(w)).item.status, 'booked'); // still booked
   assert.equal(await bookedCount('full-day'), 49);
 });

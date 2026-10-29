@@ -3,10 +3,10 @@
 // checkout.session.completed with payment_status 'paid': tag the guest "Donor" in Momence and
 // send "Anniversary Contributed" to Klaviyo. Anything else is acknowledged and ignored.
 // Failure returns 500 so Stripe retries; steps are flagged so a retry repeats only what is missing.
-import { json, preflight, fail } from './_lib/http.js';
-import { safe } from './_lib/handler.js';
-import { verifyWebhook } from './_lib/stripe.js';
-import { handleStripeEvent } from './_lib/service.js';
+import { json, preflight, fail } from '../lib/http.js';
+import { safe } from '../lib/handler.js';
+import { verifyWebhook } from '../lib/stripe.js';
+import { handleStripeEvent } from '../lib/service.js';
 
 export default safe(async (req) => {
   const pre = preflight(req); if (pre) return pre;
@@ -18,4 +18,3 @@ export default safe(async (req) => {
   const r = await handleStripeEvent(event);
   return json(r.status, r.body);
 });
-export const config = { path: '/api/stripe-webhook' };

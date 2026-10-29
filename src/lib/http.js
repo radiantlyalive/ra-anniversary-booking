@@ -32,6 +32,7 @@ export async function readJson(req, maxBytes = 8192) {
 }
 
 export const clientIp = (req) =>
-  req.headers.get('x-nf-client-connection-ip') ||
+  req.headers.get('cf-connecting-ip') ||
+  req.headers.get('x-nf-client-connection-ip') || // kept for the tests and any proxy that sets it
   (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() ||
   'unknown';

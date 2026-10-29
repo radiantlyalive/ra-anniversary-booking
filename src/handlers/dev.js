@@ -1,15 +1,15 @@
 // Mock mode only. Controls for the local demo page: reset, fill Full Day, move the clock,
 // run the deadline job, make reconfirm links, read the mock Klaviyo log. 404 in sandbox and live.
-import { json, preflight, fail, readJson } from './_lib/http.js';
-import { safe } from './_lib/handler.js';
-import { isMock } from './_lib/env.js';
-import * as store from './_lib/store.js';
-import * as mock from './_lib/momence-mock.js';
-import * as klaviyo from './_lib/klaviyo.js';
-import { getConfig } from './_lib/config.js';
+import { json, preflight, fail, readJson } from '../lib/http.js';
+import { safe } from '../lib/handler.js';
+import { isMock } from '../lib/env.js';
+import * as store from '../lib/store.js';
+import * as mock from '../lib/momence-mock.js';
+import * as klaviyo from '../lib/klaviyo.js';
+import { getConfig } from '../lib/config.js';
 import { openItems, open } from '../../config/event.config.js';
-import { createBooking, runDeadline, reconfirmUrl, reconfirmState } from './_lib/service.js';
-import { readToken } from './_lib/signing.js';
+import { createBooking, runDeadline, reconfirmUrl, reconfirmState } from '../lib/service.js';
+import { readToken } from '../lib/signing.js';
 
 export default safe(async (req) => {
   const pre = preflight(req); if (pre) return pre;
@@ -41,4 +41,3 @@ export default safe(async (req) => {
   if (action === 'token-ref') return json(200, { ref: readToken(p.t)?.ref ?? null });
   return fail(400, 'unknown_action');
 });
-export const config = { path: '/api/dev' };

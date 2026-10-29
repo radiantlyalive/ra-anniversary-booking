@@ -9,7 +9,7 @@
 // test session, capacity 5 or less, waitlist on), CHECK_EMAIL_BASE (an inbox you control, e.g. you@example.com,
 // used as you+ra-check-1@example.com), and --yes. It creates test members and bookings in that session.
 // Self-test of this script's logic against the mock: BOOKING_MODE=mock node scripts/momence-checks.mjs --self-test
-import * as momence from '../netlify/functions/_lib/momence.js';
+import * as momence from '../src/lib/momence.js';
 
 const self = process.argv.includes('--self-test');
 if (self) process.env.BOOKING_MODE = 'mock';

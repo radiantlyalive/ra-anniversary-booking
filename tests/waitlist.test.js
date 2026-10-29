@@ -1,9 +1,9 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { fresh, fullDayGuest, guest, post, events, bookedCount, momenceState } from './helpers.js';
-import { createBooking, handleMomenceEvent, releaseSpot, publicState } from '../netlify/functions/_lib/service.js';
-import * as mock from '../netlify/functions/_lib/momence-mock.js';
-import momenceWebhook from '../netlify/functions/momence-webhook.js';
+import { createBooking, handleMomenceEvent, releaseSpot, publicState } from '../src/lib/service.js';
+import * as mock from '../src/lib/momence-mock.js';
+import momenceWebhook from '../src/handlers/momence-webhook.js';
 
 beforeEach(() => fresh({ seedFullDay: 0 }));
 

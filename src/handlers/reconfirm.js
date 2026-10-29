@@ -4,13 +4,13 @@
 //   release -> Momence cancel (the waitlist moves up), Klaviyo "Anniversary Released"
 // Form posts get an HTML page back; JSON posts (Accept: application/json) get JSON.
 // After the deadline both actions are refused with a polite page (open question for Rafa).
-import { json, html, preflight, fail, readJson } from './_lib/http.js';
-import { safe } from './_lib/handler.js';
-import { getConfig } from './_lib/config.js';
-import { readToken } from './_lib/signing.js';
-import { reconfirmState, confirmSpot, releaseSpot } from './_lib/service.js';
-import { reconfirmPage } from './_lib/pages.js';
-import { formatBali } from './_lib/time.js';
+import { json, html, preflight, fail, readJson } from '../lib/http.js';
+import { safe } from '../lib/handler.js';
+import { getConfig } from '../lib/config.js';
+import { readToken } from '../lib/signing.js';
+import { reconfirmState, confirmSpot, releaseSpot } from '../lib/service.js';
+import { reconfirmPage } from '../lib/pages.js';
+import { formatBali } from '../lib/time.js';
 
 const wantsJson = (req) => (req.headers.get('accept') || '').includes('application/json') || (req.headers.get('content-type') || '').includes('application/json');
 
@@ -48,4 +48,3 @@ export default safe(async (req) => {
   if (asJson) return json(200, { state: view.state, changed: didIt });
   return html(200, await render(token, view, didIt ? action : null));
 });
-export const config = { path: '/api/reconfirm' };

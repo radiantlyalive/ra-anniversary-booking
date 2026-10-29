@@ -30,7 +30,7 @@ await dev(page, { action: 'reset', seed: 13 });
 await dev(page, { action: 'now' });
 await page.reload();
 const live = page.locator('#ra-booking');
-await live.getByText('37 of 50 spots left').waitFor();
+await live.getByText('37 of 50 spots left').waitFor({ timeout: 8000 }).catch(async (e) => { console.log('widget text:', JSON.stringify((await live.textContent()).slice(0, 200)), 'errors:', errors); throw e; });
 await noSideways('demo page');
 
 // Whole-day tick gates both buttons

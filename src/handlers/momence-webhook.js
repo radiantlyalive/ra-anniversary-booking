@@ -9,11 +9,11 @@
 //   - the endpoint fails closed unless MOMENCE_WEBHOOK_SECRET is set, and then requires it in the
 //     x-ra-webhook-secret header or ?secret= query value. That is a shared secret, not a signature.
 import { timingSafeEqual } from 'node:crypto';
-import { json, preflight, fail, readJson } from './_lib/http.js';
-import { safe } from './_lib/handler.js';
-import { isMock } from './_lib/env.js';
-import { parseWebhook } from './_lib/momence-real.js';
-import { handleMomenceEvent } from './_lib/service.js';
+import { json, preflight, fail, readJson } from '../lib/http.js';
+import { safe } from '../lib/handler.js';
+import { isMock } from '../lib/env.js';
+import { parseWebhook } from '../lib/momence-real.js';
+import { handleMomenceEvent } from '../lib/service.js';
 
 const same = (a, b) => { const x = Buffer.from(a), y = Buffer.from(b); return x.length === y.length && timingSafeEqual(x, y); };
 
@@ -33,4 +33,3 @@ export default safe(async (req) => {
   const r = await handleMomenceEvent(ev);
   return json(r.status, r.body);
 });
-export const config = { path: '/api/momence-webhook' };

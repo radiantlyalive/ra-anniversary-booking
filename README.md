@@ -6,7 +6,7 @@ Guests book on the anniversary event page (Squarespace) for free, or with a dona
 
 > **Status: booking flow built and tested in mock mode.** `npm run dev` serves a local demo with every widget state, and 91 tests cover booking, donation, waitlist, reconfirm and the deadline job. Nothing is connected to Momence, Stripe or Klaviyo, nothing is deployed, and the live site is untouched.
 >
-> **Not done:** the real Momence calls (only auth is documented; the other API pages have not been read), the move from Netlify to Cloudflare Workers (hosting is changing; the docs host was not reachable), and the manage and thank-you pages on Squarespace (see `docs/decisions.md`).
+> **Runs on a Cloudflare Worker with a Durable Object**, locally only. **Not done:** the real Momence calls (only auth is documented; the other API pages have not been read), a deploy (none, and none without a separate yes), and the manage and thank-you pages on Squarespace (see `docs/decisions.md`). The Cloudflare docs were not reachable, so the Worker config follows the author's knowledge of Workers and has only been run locally.
 
 Based on the proposal by Abraham (Marketing), 29 October 2026, and the anniversary content deck. Where the two disagree, the repo does not choose: see [Waiting on Rafa](#waiting-on-rafa).
 
@@ -19,7 +19,7 @@ Squarespace event page
   └─ code block: booking widget (widget/)
         │  fetch /api/...
         ▼
-Functions (netlify/functions/, moving to Cloudflare Workers)  ◄── webhooks from Momence and Stripe
+Cloudflare Worker (src/)  ◄── webhooks from Momence and Stripe
   ├─► Momence   bookings, Full Day cap 50, waitlist, member tags
   ├─► Stripe    donations only, on Stripe-hosted Checkout
   └─► Klaviyo   every guest email, triggered by events
@@ -53,21 +53,19 @@ config/
   event.config.js      every setting; open decisions are OPEN(...) placeholders with value null
   demo.values.js       mock-mode demo values only (not decisions)
   strings.en.js        every guest-facing line, each marked "needs Rafa approval"
-netlify/functions/     one file per endpoint, each declares its own /api path
-  spots, book, contribute, stripe-webhook, momence-webhook, reconfirm, deadline
-  dev.js               mock mode only: demo controls
-  _lib/                service.js (all booking logic), momence (mock + real), stripe, klaviyo,
+src/
+  worker.js            Worker entry: routes /api/*, runs the deadline job on a Cron Trigger
+  store-do.js          the Durable Object that holds all booking state (atomic, so no double booking)
+  handlers/            spots, book, contribute, stripe-webhook, momence-webhook, reconfirm, deadline, dev
+  lib/                 service.js (all booking logic), momence (mock + real), stripe, klaviyo,
                        store, idempotency, ratelimit, signing, validate, time, config
 widget/
   ra-booking.js        embeddable widget, plain JavaScript
   ra-booking.css       RA-brand styles, every selector starts .ra-bk
   demo.html, demo.js, mock-stripe.html   local demo only
-scripts/
-  build.mjs            builds public/ (strings + widget in one script)
-  dev-server.mjs       local server, no Netlify CLI or login needed
-  check-config.mjs     lists decisions still waiting on Rafa
-  momence-checks.mjs   the three Momence checks (written, not run)
-tests/                 node:test, 91 tests, plus tests/e2e (browser check)
+scripts/               build.mjs, check-config.mjs, momence-checks.mjs
+tests/                 node:test (91 tests) and tests/e2e (browser check against `npm run dev`)
+wrangler.jsonc         Worker config: assets, Durable Object, cron every 15 minutes
 docs/                  decisions, momence, flows, tracking, embed
 ```
 
@@ -78,11 +76,11 @@ Needs Node 20 or later.
 ```bash
 npm install
 cp .env.example .env      # BOOKING_MODE=mock needs no keys
-npm run dev               # http://localhost:8888/demo.html
+npm run dev               # wrangler dev: http://localhost:8888/demo.html
 npm test
 ```
 
-The demo page has the live flow (mock API), a preview of every widget state (booking form, form errors, single sessions, Full Day full, booking not open, amount step, Stripe handoff, thank-you, back from Stripe paid or abandoned, waitlisted, partly waitlisted, error states), the reconfirm page with confirmed and released, the emails Klaviyo would send, and the Momence mock. Mock state is kept in `.mock-data/` (git-ignored); the Reset button clears it.
+The demo page has the live flow (mock API), a preview of every widget state (booking form, form errors, single sessions, Full Day full, booking not open, amount step, Stripe handoff, thank-you, back from Stripe paid or abandoned, waitlisted, partly waitlisted, error states), the reconfirm page with confirmed and released, the emails Klaviyo would send, and the Momence mock. Mock state lives in the local Durable Object (`.wrangler/`, git-ignored); the Reset button clears it.
 
 Browser check (Playwright, with `npm run dev` running): `npm run test:e2e`.
 
@@ -98,7 +96,7 @@ Browser check (Playwright, with `npm run dev` running): `npm run test:e2e`.
 
 ## Environment variables
 
-All secrets live in the host's secret settings (Cloudflare Workers secrets once the move is done; Netlify until then). They never go in code, commits, chat or email. Names are listed in [`.env.example`](.env.example).
+All secrets live in Cloudflare Workers secrets (`wrangler secret put NAME`) and never in `wrangler.jsonc`, code, commits or chat. They never go in code, commits, chat or email. Names are listed in [`.env.example`](.env.example).
 
 | Variable | What it is | From |
 |---|---|---|
@@ -138,11 +136,11 @@ GTM `dataLayer` events: `ra_bk_tab_change`, `ra_bk_form_submit`, `ra_bk_free_boo
 
 ## Hosting
 
-The first build targets Netlify functions. Hosting is moving to Cloudflare Workers (Abe's updated proposal): the booking logic and widget are plain web-standard code and port as is, while entry points, the scheduled deadline job (Cron Trigger), storage (Netlify Blobs to D1 or a Durable Object, undecided) and secrets change. The port waits on the Cloudflare docs, which the build session could not reach.
+Cloudflare Workers, per Abe's updated proposal. Static files (widget, CSS, demo) are Workers Static Assets. All state is one Durable Object: it handles one request at a time, so the idempotency lock is atomic and a double click that reaches two Worker instances still books once (checked locally with six parallel requests). The deadline job is a Cron Trigger every 15 minutes. Nothing is deployed.
 
 ## Not verified yet
 
-Stripe checkout fields and IDR minor units, the Klaviyo events API and the Blobs calls were written from memory because their docs were unreachable. Every Momence call except auth is unwritten (`docs/momence.md`). Run on sandbox keys before trusting any of it.
+Stripe checkout fields and IDR minor units, the Klaviyo events API, and the Worker, Durable Object and Cron config (run locally only, never deployed) were written without the vendor docs, which were unreachable. Every Momence call except auth is unwritten (`docs/momence.md`). Run on sandbox keys before trusting any of it.
 
 ## Brand rules for the widget
 
@@ -191,8 +189,8 @@ The widget sits on radiantlyalive.com and follows RA brand law and the /home-2 c
 - [ ] Receipt choice: Stripe receipt or a Klaviyo thank-you email, not both
 
 **Other**
-- [ ] Klaviyo private API key, and the flows for the events listed in [`netlify/functions/_lib/klaviyo.js`](netlify/functions/_lib/klaviyo.js)
-- [ ] Hosting account linked to this repo (Cloudflare Workers, replacing Netlify)
+- [ ] Klaviyo private API key, and the flows for the events listed in [`src/lib/klaviyo.js`](src/lib/klaviyo.js)
+- [ ] Cloudflare account for the Worker, with Durable Objects (the Workers paid plan may be needed: check), linked to this repo
 - [ ] **Squarespace Business plan or higher.** Without it, code-block JavaScript doesn't run and the widget can't go on the page. Confirm this first.
 
 ---
@@ -203,8 +201,8 @@ The dates are from the proposal. They assume Momence and Stripe access arrives b
 
 | Phase | Dates | Work |
 |---|---|---|
-| 1. Access and setup | 30 Oct to 3 Nov | Repo and Netlify; Momence API client, staff login, sessions, test session, tags; keys in Netlify; three Momence checks; fill [`docs/momence.md`](docs/momence.md) |
-| 2. Booking engine | 3 to 6 Nov | `spots`, `book`, `contribute`, both webhooks; idempotency moved to Netlify Blobs |
+| 1. Access and setup | 30 Oct to 3 Nov | Repo and Cloudflare; Momence API client, staff login, sessions, test session, tags; keys as Worker secrets; three Momence checks; fill [`docs/momence.md`](docs/momence.md) |
+| 2. Booking engine | 3 to 6 Nov | `spots`, `book`, `contribute`, both webhooks |
 | 3. Booking widget | 5 to 9 Nov | Both tabs, whole-day tick, both buttons, amount step, waitlist and thank-you states, spam protection, double-click protection; embed on a hidden Squarespace test page |
 | 4. Emails and reconfirm | 6 to 10 Nov | Klaviyo flows (confirmation, waitlisted, thank-you, reconfirm, reminder, "You're in"); reconfirm page; deadline job |
 | 5. Test and launch | 10 to 12 Nov | Full sandbox test (free, donation, full and waitlist, cancel, reconfirm, release); front-desk walkthrough; live keys; add to the anniversary page |
@@ -229,7 +227,7 @@ Launch date depends on P1. Key dates (P5): reconfirm emails Thu 26 Nov, reminder
 
 ## Cost
 
-- GitHub and Netlify: the free plans are expected to cover an event of this size.
+- GitHub and Cloudflare: free plans are expected to cover an event of this size. Durable Objects availability on the free plan is to be checked.
 - Stripe: its standard fee on each donation, nothing on free bookings.
 - Momence, Klaviyo and Squarespace: existing accounts.
 

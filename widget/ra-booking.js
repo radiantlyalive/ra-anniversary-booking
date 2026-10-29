@@ -236,11 +236,11 @@
     }
     function submit(intent) {
       if (st.busy) return;
-      var tab = st.tab, bad = validate(tab);
+      var tab = st.tab, bad = validate(tab); /* the waitlist button has no whole-day tick: see docs/decisions.md */
       if (bad.length) { showErrors(bad); return; }
       var hp = (document.getElementById('ra-bk-website') || {}).value || '';
       var body = { type: tab === 'full' ? 'full-day' : 'single', sessions: tab === 'single' ? chosen() : undefined, name: st.f.name, email: st.f.email, whatsapp: st.f.whatsapp,
-        wholeDay: tab === 'full' ? st.f.whole : undefined, intent: intent, website: hp, turnstileToken: st.token || undefined };
+        wholeDay: tab === 'full' ? (st.cfg.fullDay.full ? true : st.f.whole) : undefined, intent: intent, website: hp, turnstileToken: st.token || undefined };
       // The same key for the same details: a double click or a retry never books twice.
       var sig = JSON.stringify([body.type, body.sessions, body.name, body.email, body.whatsapp, body.intent]);
       if (st.idemSig !== sig) { st.idemSig = sig; st.idem = uuid(); }

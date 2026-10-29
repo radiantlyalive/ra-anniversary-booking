@@ -12,13 +12,13 @@ When Rafa decides: set the value in `config/event.config.js`, add the date and d
 | P4 | Class credit for single sessions | Yes | Absent | Open. Stub, disabled |
 | P5 | Reconfirm schedule | Adds a final confirmation the morning before | 26 Nov email, 27 Nov reminder, 28 Nov 12:00 deadline | Open |
 | P6 | Meal package, IDR 100,000 to 150,000 | Optional | Absent | Open. Stub, disabled |
-| P7 | Automation layer | RA runs automation on Zapier | New service in this repo (Netlify, now Cloudflare Workers) | Open |
+| P7 | Automation layer | RA runs automation on Zapier | New service in this repo (Cloudflare Workers) | Open |
 | D2-D5 | Currency, suggested amounts, refund wording, whether contributors keep a spot if they miss the reconfirm | | Placeholders IDR 100K, 250K, 500K; recommended yes | Open |
 | D4 | Automatic release or team review at the deadline | | Both mentioned | Open (inside P5 config) |
 | D6 | Room size for single sessions, which may need caps | | Raised | Open (inside P2 config) |
 | S1 | Public URL of the anniversary event page | | | Open |
 | S2 | Slugs of the thank-you and manage pages | | Abe: `/anniversary/thank-you`, `/anniversary/manage` | Open. Slugs are Rafa's call |
-| H1 | Hosting | | Abe's updated proposal: Cloudflare Workers. Haidar: moving from Netlify | Port not done yet |
+| H1 | Hosting | | Abe's updated proposal: Cloudflare Workers. Haidar: moving from Netlify, Durable Object for storage | Ported and run locally; not deployed |
 | C1 | All guest copy in `config/strings.en.js` | | | Needs approval |
 
 ## Questions the build raised (not in any source document)
@@ -31,6 +31,7 @@ When Rafa decides: set the value in `config/event.config.js`, add the date and d
 6. Button label "Join with Donation" is fixed by the proposal; the word follows P3. Confirm the label follows P3.
 7. Turnstile: in Abe's updated proposal. Rafa to approve.
 8. Stripe receipt or a Klaviyo thank-you email, not both.
+9. The waitlist button has no whole-day tick (the brief says the tick gates the two booking buttons). If a spot frees up between page load and the click, an unticked guest could be booked. Add the tick to the waitlist too?
 
 ## Not verified yet
 

@@ -23,7 +23,7 @@ Two credentials are involved:
 
 Token object: `accessToken` (also `access_token`), `accessTokenExpiresAt`, `refreshToken` (also `refresh_token`), `refreshTokenExpiresAt`. Both expiry fields are date-times.
 
-Plan for the booking functions: use the `password` grant with the dedicated booking-page staff login (the authorization-code flow needs a browser and is not used). Cache the token, refresh it before `accessTokenExpiresAt`, and fall back to the password grant if the refresh fails. Netlify functions are stateless, so the token cache lives in the store (Netlify Blobs), not in memory.
+Plan for the booking functions: use the `password` grant with the dedicated booking-page staff login (the authorization-code flow needs a browser and is not used). Cache the token, refresh it before `accessTokenExpiresAt`, and fall back to the password grant if the refresh fails. Workers are stateless between requests, so the token cache lives in the store (the Durable Object), not in memory.
 
 ### Auth: still UNKNOWN
 - How the access token is sent on API calls. The docs name an OAuth2 scheme, which usually means `Authorization: Bearer <accessToken>`. Confirm on the test session.

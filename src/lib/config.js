@@ -1,7 +1,7 @@
 // Resolves config for the running mode. Open placeholders are null until Rafa decides.
 // mock: demo values fill the gaps. sandbox and live: a null placeholder stops the request.
-import * as cfg from '../../../config/event.config.js';
-import { demoValues } from '../../../config/demo.values.js';
+import * as cfg from '../../config/event.config.js';
+import { demoValues } from '../../config/demo.values.js';
 import { isMock } from './env.js';
 import { toUtcIso } from './time.js';
 

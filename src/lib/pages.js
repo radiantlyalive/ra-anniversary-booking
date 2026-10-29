@@ -1,6 +1,6 @@
 // Server-rendered reconfirm page. GET shows it and changes nothing (email scanners open links).
 // Confirm and release are a <form method="post">, so they need a real tap and work without JS.
-import { strings, fmt } from '../../../config/strings.en.js';
+import { strings, fmt } from '../../config/strings.en.js';
 import { css } from './css.generated.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
