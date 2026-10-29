@@ -109,6 +109,15 @@ test('Stripe signature: wrong secret, tampered body, missing header and old time
   bad('garbage');
   bad(signPayload(body, SECRET, now - 301));
 });
+test('Stripe signature: during a secret roll any one of several v1 signatures may match, v0 is ignored', () => {
+  const now = 1_800_000_000;
+  const good = signPayload(body, SECRET, now).split(',v1=')[1];
+  const stale = signPayload(body, 'whsec_old', now).split(',v1=')[1];
+  const h = (...sigs) => `t=${now},${sigs.map((s) => `v1=${s}`).join(',')},v0=abc`;
+  assert.equal(verifyWebhook(body, h(stale, good), { secret: SECRET, nowSec: now }).id, 'evt_1');
+  assert.equal(verifyWebhook(body, h(good, stale), { secret: SECRET, nowSec: now }).id, 'evt_1');
+  assert.throws(() => verifyWebhook(body, h(stale), { secret: SECRET, nowSec: now }), { code: 'bad_signature' });
+});
 test('with a webhook secret set, an unsigned request is refused even in mock mode', async () => {
   process.env.STRIPE_WEBHOOK_SECRET = SECRET;
   try {
@@ -124,4 +133,5 @@ test('minor units: IDR is two-decimal, JPY is whole', () => {
   assert.equal(toMinorUnits(10000, 'IDR'), 1000000);
   assert.equal(fromMinorUnits(1000000, 'idr'), 10000);
   assert.equal(toMinorUnits(500, 'JPY'), 500);
+  assert.equal(toMinorUnits(5, 'UGX'), 500); // UGX is two-decimal in the Stripe API
 });

@@ -35,5 +35,5 @@ When Rafa decides: set the value in `config/event.config.js`, add the date and d
 
 ## Not verified yet
 
-- Stripe checkout request fields, minor units for IDR, Klaviyo events API shape and revision, and the object store calls were written from memory: their docs were not reachable from the build session. Run once on sandbox keys before trusting them.
-- Every Momence call except auth (see `docs/momence.md`).
+- Stripe, Klaviyo and Cloudflare code was checked against their docs on 2026-10-29. Open: Stripe `price_data` nested fields and `Idempotency-Key`, the Klaviyo auth header, Worker to Durable Object calls. Run once on sandbox keys.
+- Momence: endpoints are documented in `docs/momence.md`. Open for Rafa or the test session: the `session.booked` versus `session-booked` event name conflict, whether a free booking respects the cap, and the webhook HMAC key.

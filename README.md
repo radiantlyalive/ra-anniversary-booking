@@ -4,9 +4,9 @@ Booking system for **Move Beyond Your Self: RA Anniversary**, Tuesday 1 December
 
 Guests book on the anniversary event page (Squarespace) for free, or with a donation. Every booking still lands in Momence, so the front desk, the 50-place Full Day cap and the waitlist work as they do today.
 
-> **Status: booking flow built and tested in mock mode.** `npm run dev` serves a local demo with every widget state, and 91 tests cover booking, donation, waitlist, reconfirm and the deadline job. Nothing is connected to Momence, Stripe or Klaviyo, nothing is deployed, and the live site is untouched.
+> **Status: booking flow built and tested in mock mode.** `npm run dev` serves a local demo with every widget state, and 92 tests cover booking, donation, waitlist, reconfirm and the deadline job. Nothing is connected to Momence, Stripe or Klaviyo, nothing is deployed, and the live site is untouched.
 >
-> **Runs on a Cloudflare Worker with a Durable Object**, locally only. **Not done:** the real Momence calls (only auth is documented; the other API pages have not been read), a deploy (none, and none without a separate yes), and the manage and thank-you pages on Squarespace (see `docs/decisions.md`). The Cloudflare docs were not reachable, so the Worker config follows the author's knowledge of Workers and has only been run locally.
+> **Runs on a Cloudflare Worker with a Durable Object**, locally only. **Not done:** the real Momence calls (the API pages are documented in `docs/momence.md`, the client is not yet written against them), a deploy (none, and none without a separate yes), and the manage and thank-you pages on Squarespace (see `docs/decisions.md`). The Worker config was checked against the Cloudflare docs and has only been run locally.
 
 Based on the proposal by Abraham (Marketing), 29 October 2026, and the anniversary content deck. Where the two disagree, the repo does not choose: see [Waiting on Rafa](#waiting-on-rafa).
 
@@ -64,7 +64,7 @@ widget/
   ra-booking.css       RA-brand styles, every selector starts .ra-bk
   demo.html, demo.js, mock-stripe.html   local demo only
 scripts/               build.mjs, check-config.mjs, momence-checks.mjs
-tests/                 node:test (91 tests) and tests/e2e (browser check against `npm run dev`)
+tests/                 node:test (92 tests) and tests/e2e (browser check against `npm run dev`)
 wrangler.jsonc         Worker config: assets, Durable Object, cron every 15 minutes
 docs/                  decisions, momence, flows, tracking, embed
 ```
@@ -140,7 +140,7 @@ Cloudflare Workers, per Abe's updated proposal. Static files (widget, CSS, demo)
 
 ## Not verified yet
 
-Stripe checkout fields and IDR minor units, the Klaviyo events API, and the Worker, Durable Object and Cron config (run locally only, never deployed) were written without the vendor docs, which were unreachable. Every Momence call except auth is unwritten (`docs/momence.md`). Run on sandbox keys before trusting any of it.
+Checked against the vendor docs on 2026-10-29: Stripe checkout fields, IDR minor units and webhook signature; the Klaviyo events API and revision; the Worker, Durable Object, Cron and assets config. Still unchecked: Stripe `price_data` nested fields and the `Idempotency-Key` header (not visible in the fetched docs), the Klaviyo auth header, and Worker to Durable Object calls. The Momence endpoints are now documented in `docs/momence.md`, but the Momence client code has not been compared with them and several behaviours are UNKNOWN there. Run on sandbox keys before trusting any of it.
 
 ## Brand rules for the widget
 
