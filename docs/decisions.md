@@ -18,7 +18,7 @@ When Rafa decides: set the value in `config/event.config.js`, add the date and d
 | D6 | Room size for single sessions, which may need caps | | Raised | Open (inside P2 config) |
 | S1 | Public URL of the anniversary event page | | | Open |
 | S2 | Slugs of the thank-you and manage pages | | Abe: `/anniversary/thank-you`, `/anniversary/manage` | Open. Slugs are Rafa's call |
-| H1 | Hosting | | Abe's updated proposal: Cloudflare Workers. Haidar: moving from Netlify, Durable Object for storage | Ported and run locally; not deployed |
+| H1 | Hosting | | Abe's updated proposal: Cloudflare Workers. Haidar: moving from Netlify, Durable Object for storage | Ported; mock-mode demo deployed 2026-10-29 (no secrets); sandbox and live not deployed |
 | C1 | All guest copy in `config/strings.en.js` | | | Needs approval |
 
 ## Questions the build raised (not in any source document)

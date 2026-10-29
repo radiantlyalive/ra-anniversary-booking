@@ -4,9 +4,9 @@ Booking system for **Move Beyond Your Self: RA Anniversary**, Tuesday 1 December
 
 Guests book on the anniversary event page (Squarespace) for free, or with a donation. Every booking still lands in Momence, so the front desk, the 50-place Full Day cap and the waitlist work as they do today.
 
-> **Status: booking flow built and tested in mock mode.** `npm run dev` serves a local demo with every widget state, and 107 tests cover booking, donation, waitlist, reconfirm and the deadline job. Nothing is connected to Momence, Stripe or Klaviyo, nothing is deployed, and the live site is untouched.
+> **Status: booking flow built and tested in mock mode.** `npm run dev` serves a local demo with every widget state, and 107 tests cover booking, donation, waitlist, reconfirm and the deadline job. Nothing is connected to Momence, Stripe or Klaviyo, and the live site is untouched. A **mock-mode demo is deployed** at https://ra-anniversary-booking.muddy-recipe-77c7.workers.dev (fake data, open `/api/dev` controls, public: do not link it from the live site).
 >
-> **Runs on a Cloudflare Worker with a Durable Object**, locally only. **Not done:** running the real Momence calls (written in `src/lib/momence-real.js` against `docs/momence.md`, never run against Momence), a deploy (none, and none without a separate yes), and the manage and thank-you pages on Squarespace (see `docs/decisions.md`). The Worker config was checked against the Cloudflare docs and has only been run locally.
+> **Runs on a Cloudflare Worker with a Durable Object**, locally and as the mock demo deploy above. **Not done:** running the real Momence calls (written in `src/lib/momence-real.js` against `docs/momence.md`, never run against Momence), a sandbox or live deploy (none, and none without a separate yes), and the manage and thank-you pages on Squarespace (see `docs/decisions.md`). The Worker config was checked against the Cloudflare docs. The mock deploy was done on 2026-10-29 with no secrets set; `/` redirects to `/demo.html` in mock mode only.
 
 Based on the proposal by Abraham (Marketing), 29 October 2026, and the anniversary content deck. Where the two disagree, the repo does not choose: see [Waiting on Rafa](#waiting-on-rafa).
 
@@ -136,7 +136,7 @@ GTM `dataLayer` events: `ra_bk_tab_change`, `ra_bk_form_submit`, `ra_bk_free_boo
 
 ## Hosting
 
-Cloudflare Workers, per Abe's updated proposal. Static files (widget, CSS, demo) are Workers Static Assets. All state is one Durable Object: it handles one request at a time, so the idempotency lock is atomic and a double click that reaches two Worker instances still books once (checked locally with six parallel requests). The deadline job is a Cron Trigger every 15 minutes. Nothing is deployed.
+Cloudflare Workers, per Abe's updated proposal. Static files (widget, CSS, demo) are Workers Static Assets. All state is one Durable Object: it handles one request at a time, so the idempotency lock is atomic and a double click that reaches two Worker instances still books once (checked locally with six parallel requests). The deadline job is a Cron Trigger every 15 minutes. Deployed in mock mode only (`BOOKING_MODE = "mock"`, no secrets) with `npx wrangler deploy`; sandbox and live are not deployed.
 
 ## Not verified yet
 
