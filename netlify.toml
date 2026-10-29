@@ -1,14 +1,15 @@
 [build]
-  publish = "widget"
+  command = "node scripts/build.mjs"
+  publish = "public"
   functions = "netlify/functions"
 
-[dev]
-  publish = "widget"
-  port = 8888
+[functions]
+  node_bundler = "esbuild"
 
 # Functions declare their own paths (/api/...) and the deadline schedule in code.
-
+# The widget files are cached briefly so a fix reaches the Squarespace page quickly.
 [[headers]]
   for = "/ra-booking.*"
   [headers.values]
     Cache-Control = "public, max-age=300"
+    Access-Control-Allow-Origin = "*"

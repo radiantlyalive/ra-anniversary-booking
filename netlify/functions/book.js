@@ -1,15 +1,34 @@
 // POST /api/book
-// Body: { type: 'full-day' | 'single', sessions?: string[], name, email, whatsapp,
-//         wholeDay?: boolean, intent: 'free' | 'donate', honeypot?: string }
-// Header: Idempotency-Key (required)
-// Flow: validate -> spam check -> find or create member -> book FREE first
-//       (or waitlist if Full Day is full) -> Klaviyo event -> return next step.
-// Response: { status: 'booked' | 'waitlisted', bookingRef, next: 'done' | 'amount' }
-import { json, preflight, notBuilt } from './_lib/http.js';
+// Header: Idempotency-Key (required, 8 to 100 chars: letters, digits, - _)
+// Body: { type: 'full-day'|'single', sessions?: string[], name, email, whatsapp,
+//         wholeDay?: boolean (required true for full-day), intent: 'free'|'donate',
+//         website?: string (honeypot, must be empty), turnstileToken?: string }
+// 201/200 -> { status: 'booked'|'partial'|'waitlisted', bookingRef, items:[{key,label,status}],
+//              next: 'done'|'amount', firstName, duplicate? }
+// Errors  -> { error: closed|validation|bot|rate_limited|session_full|in_progress|... }
+// Both buttons book a FREE spot first. "Join with Donation" returns next:'amount'.
+import { json, preflight, fail, readJson, clientIp } from './_lib/http.js';
+import { safe } from './_lib/handler.js';
+import { getConfig } from './_lib/config.js';
+import { allow } from './_lib/ratelimit.js';
+import * as idem from './_lib/idempotency.js';
+import * as turnstile from './_lib/turnstile.js';
+import { createBooking } from './_lib/service.js';
 
-export default async (req) => {
+export default safe(async (req) => {
   const pre = preflight(req); if (pre) return pre;
-  if (req.method !== 'POST') return json(405, { error: 'method_not_allowed' });
-  return notBuilt('book');
-};
+  if (req.method !== 'POST') return fail(405, 'method_not_allowed');
+  const cfg = getConfig();
+  const ip = clientIp(req);
+  if (!(await allow('book', ip, cfg.limits.bookPerIp))) return fail(429, 'rate_limited');
+
+  const body = await readJson(req);
+  if (body.website) return fail(400, 'bot'); // honeypot
+  const key = req.headers.get('idempotency-key');
+  if (!idem.validKey(key)) return fail(400, 'idempotency_key_required');
+  if (!(await turnstile.verify(body.turnstileToken, ip))) return fail(400, 'bot');
+
+  const r = await idem.run('book', key, () => createBooking(body));
+  return json(r.status, r.body);
+});
 export const config = { path: '/api/book' };

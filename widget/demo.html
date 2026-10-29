@@ -4,19 +4,86 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RA anniversary booking: local demo</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ra-booking.css">
 <style>
-  body{ margin:0; padding:48px 16px; background:#FFFDEB; font-family:"Poppins",system-ui,sans-serif; font-size:17px; }
-  .wrap{ max-width:640px; margin:0 auto; }
-  .note{ font-size:13px; color:#5A162F; border-left:2px solid #EB9000; padding-left:12px; margin-bottom:32px; }
+  /* Demo page only. Same eight colours, square, no shadows. Not part of the widget. */
+  body{ margin:0; background:#FFFDEB; color:#3A0D1F; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:17px; line-height:1.55; }
+  .page{ max-width:1080px; margin:0 auto; padding:32px 16px 80px; }
+  h1,h2{ font-weight:900; color:#5A162F; line-height:1.15; margin:0 0 12px; }
+  h1{ font-size:32px; } h2{ font-size:22px; margin-top:0; }
+  .banner{ border:1px solid #5A162F; background:#EDE5D5; padding:16px 20px; margin:0 0 24px; }
+  .banner ul{ margin:8px 0 0; padding-left:20px; font-size:15px; }
+  .cols{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:32px; }
+  .block{ border-top:1px solid #5A162F; padding-top:20px; margin-top:28px; }
+  .bar{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 16px; }
+  .bar button{ font:inherit; font-size:14px; min-height:44px; padding:0 14px; background:transparent; color:#9B1823; border:1px solid #5A162F; border-radius:0; cursor:pointer; }
+  .bar button[aria-pressed="true"]{ background:#9B1823; color:#FFFDEB; border-color:#9B1823; }
+  .stage{ background:#FFFDEB; border:1px dashed #5A162F; padding:20px; }
+  iframe{ width:100%; height:420px; border:1px solid #5A162F; background:#FFFDEB; }
+  pre{ margin:0; padding:12px; background:#F5F0E8; border:1px solid #5A162F; overflow:auto; font-size:13px; max-height:280px; }
+  small{ font-size:14px; }
+  @media (max-width:860px){ .cols{ grid-template-columns:minmax(0,1fr); } }
+  :focus-visible{ outline:3px solid #9B1823; outline-offset:3px; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <p class="note">Local demo, mock mode. Not the real page. Run <code>npm run dev</code> and open /demo.html.</p>
-  <div id="ra-booking" data-api="/api"></div>
+<div class="page">
+  <h1>RA anniversary booking: local demo</h1>
+  <div class="banner" role="note">
+    <strong>Mock mode.</strong> Nothing here touches Momence, Stripe or Klaviyo, or the live site. Values for the open decisions are demo placeholders, not decisions.
+    <ul id="open"></ul>
+  </div>
+
+  <div class="cols">
+    <div>
+      <h2>Live flow (mock API)</h2>
+      <div class="bar" role="group" aria-label="Demo controls">
+        <button type="button" data-do="reset">Reset (13 of 50)</button>
+        <button type="button" data-do="fill">Fill the Full Day</button>
+        <button type="button" data-do="leave1">Leave 1 spot</button>
+        <button type="button" data-do="after">Jump to after the deadline</button>
+        <button type="button" data-do="real">Back to real time</button>
+        <button type="button" data-do="deadline">Run deadline job</button>
+      </div>
+      <div class="stage"><div id="ra-booking" data-manual="1" data-api="/api"></div></div>
+    </div>
+
+    <div>
+      <h2>Every widget state</h2>
+      <p><small>Static previews with sample data. Pick one.</small></p>
+      <div class="bar" id="states" role="group" aria-label="Widget states"></div>
+      <div class="stage"><div id="ra-preview"></div></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>Reconfirm page</h2>
+    <p><small>The page opens from the signed link in the Full Day email. Opening it changes nothing. Confirming or releasing sends a POST.</small></p>
+    <div class="bar" role="group" aria-label="Reconfirm states">
+      <button type="button" data-rc="pending">Reconfirm page</button>
+      <button type="button" data-rc="confirm">Confirmed</button>
+      <button type="button" data-rc="release">Released</button>
+    </div>
+    <p><small id="rc-url"></small></p>
+    <iframe id="rc" title="Reconfirm page preview"></iframe>
+  </div>
+
+  <div class="block cols">
+    <div>
+      <h2>Emails Klaviyo would send</h2>
+      <p><small>Events the functions sent in mock mode.</small></p>
+      <div class="bar"><button type="button" data-do="events">Refresh</button></div>
+      <pre id="events">No events yet.</pre>
+    </div>
+    <div>
+      <h2>Momence mock</h2>
+      <p><small>Members, bookings, waitlists and tags.</small></p>
+      <div class="bar"><button type="button" data-do="state">Refresh</button></div>
+      <pre id="mstate">Nothing yet.</pre>
+    </div>
+  </div>
 </div>
-<script src="ra-booking.js" defer></script>
+<script src="ra-booking.js"></script>
+<script src="demo.js"></script>
 </body>
 </html>

@@ -1,12 +1,21 @@
-// POST /api/stripe-webhook   (checkout.session.completed)
-// Verify the signature with STRIPE_WEBHOOK_SECRET, then:
-//   Momence: tag the member with momenceTags.donor
-//   Klaviyo: "Anniversary Contributed" event
-// Must be idempotent: Stripe can deliver the same event more than once.
-import { json, notBuilt } from './_lib/http.js';
+// POST /api/stripe-webhook   (Stripe signs every call; the signature is verified, no exceptions
+// outside mock mode with no secret set)
+// checkout.session.completed with payment_status 'paid': tag the guest "Donor" in Momence and
+// send "Anniversary Contributed" to Klaviyo. Anything else is acknowledged and ignored.
+// Failure returns 500 so Stripe retries; steps are flagged so a retry repeats only what is missing.
+import { json, preflight, fail } from './_lib/http.js';
+import { safe } from './_lib/handler.js';
+import { verifyWebhook } from './_lib/stripe.js';
+import { handleStripeEvent } from './_lib/service.js';
 
-export default async (req) => {
-  if (req.method !== 'POST') return json(405, { error: 'method_not_allowed' });
-  return notBuilt('stripe-webhook');
-};
+export default safe(async (req) => {
+  const pre = preflight(req); if (pre) return pre;
+  if (req.method !== 'POST') return fail(405, 'method_not_allowed');
+  const raw = await req.text();
+  let event;
+  try { event = verifyWebhook(raw, req.headers.get('stripe-signature')); }
+  catch (e) { if (e.code === 'bad_signature') return fail(400, 'bad_signature'); throw e; }
+  const r = await handleStripeEvent(event);
+  return json(r.status, r.body);
+});
 export const config = { path: '/api/stripe-webhook' };

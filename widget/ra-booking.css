@@ -1,53 +1,79 @@
-/* RA anniversary booking widget. Every selector is scoped to .ra-bk so nothing leaks
-   into the Squarespace page. Brand law: the eight RA colours only, no tints, no
-   shades, no hover colour variants. Crimson is the only action colour. White is for
-   form fields only. Amber is decorative and never text on a light background. */
+/* RA anniversary booking widget. Every selector starts with .ra-bk so nothing leaks into the
+   Squarespace page. Brand law: the eight RA colours only, no tints, shades or opacity, no hover
+   colour variants. Crimson is the only action colour. White is for form fields only. Amber is
+   decorative only (rule lines) and never text on a light background. */
 .ra-bk{
-  --cream:#FFFDEB; --cream-ed:#F5F0E8; --linen:#EDE5D5; --white:#FFFFFF;
-  --plum:#5A162F; --ink:#3A0D1F; --crimson:#9B1823; --amber:#EB9000;
-  --head:"Agrandir-Head", var(--heading-font-font-family, "Poppins"), system-ui, sans-serif;
-  color:var(--ink); max-width:640px;
+  --cream:#FFFDEB; --editorial:#F5F0E8; --linen:#EDE5D5; --white:#FFFFFF;
+  --plum:#5A162F; --deep:#3A0D1F; --crimson:#9B1823; --amber:#EB9000;
+  --head:"Agrandir-Head", system-ui, sans-serif;
+  color:var(--deep); max-width:640px; font-family:inherit; font-size:17px; line-height:1.55; text-align:left;
 }
-.ra-bk *{ box-sizing:border-box; }
-.ra-bk h3{ font-family:var(--head); font-weight:900; color:var(--plum); margin:0 0 8px; letter-spacing:-.012em; }
+.ra-bk *, .ra-bk *::before, .ra-bk *::after{ box-sizing:border-box; }
+.ra-bk p{ margin:0 0 12px; }
+.ra-bk__h{ font-family:var(--head); font-weight:900; font-size:28px; line-height:1.15; letter-spacing:-.012em; color:var(--plum); margin:0 0 14px; }
+.ra-bk__h:focus{ outline:none; }
+.ra-bk__rule{ display:block; width:32px; height:2px; background:var(--amber); margin:0 0 14px; } /* decorative */
+.ra-bk__sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.ra-bk__hp{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; } /* honeypot */
 
 /* Tabs */
 .ra-bk__tabs{ display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid var(--plum); margin-bottom:24px; }
-.ra-bk__tab{ font:inherit; font-size:14px; letter-spacing:.14em; text-transform:uppercase; background:transparent; color:var(--plum); border:0; border-bottom:3px solid transparent; padding:14px 8px; min-height:48px; cursor:pointer; }
+.ra-bk__tab{ font:inherit; font-size:14px; letter-spacing:.14em; text-transform:uppercase; background:transparent; color:var(--plum); border:0; border-bottom:3px solid transparent; border-radius:0; padding:14px 8px; min-height:48px; cursor:pointer; }
 .ra-bk__tab[aria-selected="true"]{ color:var(--crimson); border-bottom-color:var(--crimson); }
 
 /* Counter */
 .ra-bk__count{ font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--crimson); margin:0 0 20px; }
 
 /* Fields: white fill, Plum border, 18px so iPhones do not zoom */
-.ra-bk__field{ display:grid; gap:6px; margin-bottom:16px; }
-.ra-bk__field label{ font-size:14px; color:var(--plum); }
-.ra-bk__field input{ height:56px; padding:0 18px; font:inherit; font-size:18px; color:var(--ink); background:var(--white); border:1px solid var(--plum); border-radius:0; width:100%; }
-.ra-bk__err{ font-size:14px; color:var(--crimson); }
+.ra-bk__field{ display:grid; gap:6px; margin:0 0 16px; }
+.ra-bk__field label{ font-size:15px; color:var(--plum); }
+.ra-bk__field input{ height:56px; padding:0 16px; font:inherit; font-size:18px; color:var(--deep); background:var(--white); border:1px solid var(--plum); border-radius:0; width:100%; margin:0; box-shadow:none; -webkit-appearance:none; appearance:none; }
+.ra-bk__hint{ font-size:14px; color:var(--plum); margin:0; }
+.ra-bk__err{ font-size:15px; color:var(--crimson); margin:0; }
+.ra-bk__alert{ border:1px solid var(--crimson); padding:12px 16px; margin:0 0 16px; color:var(--crimson); }
+.ra-bk__field input[aria-invalid="true"]{ border-width:2px; border-color:var(--crimson); }
 
-/* Whole-day tick and session ticks */
-.ra-bk__tick{ display:flex; gap:12px; align-items:flex-start; padding:14px 16px; border:1px solid var(--plum); margin-bottom:12px; cursor:pointer; }
-.ra-bk__tick input{ width:20px; height:20px; accent-color:var(--crimson); flex:none; margin-top:2px; }
+/* Ticks (whole day, sessions) */
+.ra-bk__tick{ display:flex; gap:12px; align-items:flex-start; padding:14px 16px; border:1px solid var(--plum); margin:0 0 12px; cursor:pointer; color:var(--deep); }
+.ra-bk__tick input{ width:22px; height:22px; accent-color:var(--crimson); flex:none; margin:1px 0 0; }
+.ra-bk__tick small{ display:block; font-size:14px; color:var(--plum); }
+.ra-bk fieldset{ border:0; padding:0; margin:0 0 16px; min-width:0; }
+.ra-bk legend{ font-size:15px; color:var(--plum); padding:0; margin:0 0 8px; }
 
-/* Buttons: square, 54px, uppercase; hover holds the colour */
-.ra-bk__btns{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px; }
-.ra-bk__btn{ display:inline-flex; align-items:center; justify-content:center; min-height:54px; padding:0 24px; font:inherit; font-size:14px; letter-spacing:.14em; text-transform:uppercase; border-radius:0; cursor:pointer; text-align:center; }
+/* Buttons: square, 54px, uppercase. Hover holds the colour, so there is no hover rule. */
+.ra-bk__btns{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0 0; }
+.ra-bk__btn{ display:inline-flex; align-items:center; justify-content:center; min-height:54px; height:54px; padding:0 20px; font:inherit; font-size:14px; letter-spacing:.14em; text-transform:uppercase; border-radius:0; cursor:pointer; text-align:center; text-decoration:none; margin:0; line-height:1.1; }
 .ra-bk__btn--pri{ background:var(--crimson); color:var(--cream); border:1px solid var(--crimson); }
 .ra-bk__btn--sec{ background:transparent; color:var(--crimson); border:1px solid var(--plum); }
 .ra-bk__btn[disabled]{ cursor:not-allowed; background:var(--linen); color:var(--plum); border-color:var(--linen); }
-.ra-bk__link{ background:none; border:0; padding:8px 0; font:inherit; font-size:15px; color:var(--crimson); text-decoration:underline; text-underline-offset:4px; cursor:pointer; }
-.ra-bk :focus-visible{ outline:2px solid var(--crimson); outline-offset:3px; }
+.ra-bk__btn--block{ width:100%; }
+.ra-bk__link{ background:none; border:0; border-radius:0; padding:12px 0; margin:0; font:inherit; font-size:16px; color:var(--crimson); text-decoration:underline; text-underline-offset:4px; cursor:pointer; text-align:left; }
+.ra-bk__stack{ display:grid; gap:4px; justify-items:start; margin-top:12px; }
+.ra-bk :focus-visible{ outline:3px solid var(--crimson); outline-offset:3px; }
+.ra-bk__field input:focus-visible{ outline-offset:1px; }
 
 /* Amount step */
-.ra-bk__amounts{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
-.ra-bk__amounts button[aria-pressed="true"]{ background:var(--crimson); color:var(--cream); border-color:var(--crimson); }
+.ra-bk__amounts{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin:0 0 16px; }
+.ra-bk__amt{ font:inherit; font-size:16px; min-height:54px; padding:0 6px; color:var(--crimson); background:transparent; border:1px solid var(--plum); border-radius:0; cursor:pointer; }
+.ra-bk__amt[aria-pressed="true"]{ background:var(--crimson); color:var(--cream); border-color:var(--crimson); }
+
+/* Session list */
+.ra-bk__tag{ font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--crimson); }
 
 /* Result panels */
-.ra-bk__done{ border-top:1px solid var(--plum); padding-top:20px; }
-.ra-bk__done p{ margin:0 0 8px; }
+.ra-bk__done{ background:var(--editorial); border:1px solid var(--plum); padding:24px 20px; margin:0 0 16px; }
+.ra-bk__done p:last-child{ margin-bottom:0; }
+.ra-bk__done ul{ margin:0 0 12px; padding:0; list-style:none; }
+.ra-bk__done li{ padding:6px 0; border-top:1px solid var(--linen); }
+.ra-bk__done li:first-child{ border-top:0; }
 
-@media (max-width:480px){
-  .ra-bk__btns,.ra-bk__amounts{ grid-template-columns:1fr 1fr; }
+/* Standalone reconfirm page (served by the Netlify function, not Squarespace) */
+.ra-bk-body{ margin:0; background:#FFFDEB; }
+.ra-bk--page{ margin:0 auto; padding:48px 16px 64px; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
+
+@media (max-width:520px){
   .ra-bk__btns{ grid-template-columns:1fr; }
+  .ra-bk__amounts{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .ra-bk__h{ font-size:24px; }
 }
-@media (prefers-reduced-motion:reduce){ .ra-bk *{ transition:none !important; } }
+@media (prefers-reduced-motion:reduce){ .ra-bk *{ transition:none !important; animation:none !important; scroll-behavior:auto !important; } }

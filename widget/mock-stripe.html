@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock Stripe Checkout (local demo)</title>
+<link rel="stylesheet" href="ra-booking.css">
+<style>body{margin:0;background:#EDE5D5;color:#3A0D1F;font-family:system-ui,sans-serif}main{max-width:480px;margin:0 auto;padding:48px 16px}.box{background:#FFFDEB;border:1px solid #5A162F;padding:24px 20px}code{font-size:14px}</style>
+</head><body><main class="ra-bk">
+<p class="ra-bk__tag">Local mock of Stripe-hosted Checkout. Not Stripe.</p>
+<div class="box"><h1 class="ra-bk__h" id="amt">Payment</h1>
+<p>In sandbox mode this page is the real Stripe Checkout, opened from the same button. Here, the button below posts a "paid" event to the local webhook, exactly as Stripe would.</p>
+<div class="ra-bk__btns"><button class="ra-bk__btn ra-bk__btn--pri" id="pay" type="button">Pay (test)</button><button class="ra-bk__btn ra-bk__btn--sec" id="cancel" type="button">Back to the page</button></div>
+<p class="ra-bk__err" id="msg" role="alert"></p></div>
+<script>
+var q = new URLSearchParams(location.search);
+var amount = Number(q.get('amount')), cur = q.get('currency'), ref = q.get('ref');
+document.getElementById('amt').textContent = cur + ' ' + amount.toLocaleString('en-US');
+document.getElementById('pay').onclick = function () {
+  var ev = { id: 'evt_mock_' + Date.now(), type: 'checkout.session.completed', data: { object: { id: 'cs_mock_' + ref + '_' + Date.now(), payment_status: 'paid', amount_total: amount * 100, currency: cur.toLowerCase(), metadata: { booking_ref: ref }, client_reference_id: ref } } };
+  fetch('/api/stripe-webhook', { method: 'POST', body: JSON.stringify(ev) }).then(function (r) {
+    if (!r.ok) throw new Error(r.status); location.href = q.get('success');
+  }).catch(function () { document.getElementById('msg').textContent = 'The local webhook did not accept the event.'; });
+};
+document.getElementById('cancel').onclick = function () { location.href = q.get('cancel'); };
+</script></main></body></html>

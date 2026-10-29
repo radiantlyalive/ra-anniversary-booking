@@ -1,30 +1,22 @@
-// Momence client. DRAFT: endpoints are deliberately not written yet.
-// Read Momence's current API docs first and record endpoints, auth and webhook
-// payloads in docs/momence.md. Do not guess.
-import { mode } from './http.js';
-import * as mock from './mock-store.js';
+// Momence client facade. Calls take the anniversary session KEY (config), never a Momence id:
+// the real client maps keys to Momence session ids from config.
+//
+//   getSession({key})                 -> { capacity, booked, left, waiting }
+//   findOrCreateMember({name,email,whatsapp}) -> { id }
+//   book({memberId, sessionKey})      -> { ok, bookingId } | { ok:false, reason:'full' }
+//   joinWaitlist({memberId, sessionKey}) -> { ok, entryId, position }
+//   cancelBooking({bookingId})        -> { ok, promoted: [{memberId, bookingId, sessionKey}] }
+//   addTag({memberId, tag})           -> { ok }
+import { isMock } from './env.js';
+import * as mock from './momence-mock.js';
+import * as real from './momence-real.js';
 
-export async function spotsLeft(sessionId) {
-  if (mode() === 'mock') return mock.spotsLeft(sessionId);
-  throw new Error('momence.spotsLeft: not built');
-}
-export async function findOrCreateMember({ name, email, whatsapp }) {
-  if (mode() === 'mock') return mock.findOrCreateMember({ name, email, whatsapp });
-  throw new Error('momence.findOrCreateMember: not built');
-}
-export async function bookFree({ memberId, sessionId }) {
-  if (mode() === 'mock') return mock.bookFree({ memberId, sessionId });
-  throw new Error('momence.bookFree: not built');
-}
-export async function joinWaitlist({ memberId, sessionId }) {
-  if (mode() === 'mock') return mock.joinWaitlist({ memberId, sessionId });
-  throw new Error('momence.joinWaitlist: not built');
-}
-export async function cancelBooking({ bookingId }) {
-  if (mode() === 'mock') return mock.cancelBooking({ bookingId });
-  throw new Error('momence.cancelBooking: not built');
-}
-export async function addTag({ memberId, tag }) {
-  if (mode() === 'mock') return mock.addTag({ memberId, tag });
-  throw new Error('momence.addTag: not built (the tag must already exist in Momence)');
-}
+const impl = () => (isMock() ? mock : real);
+
+export const getSession = (key) => impl().getSession(key);
+export const findOrCreateMember = (g) => impl().findOrCreateMember(g);
+export const book = (a) => impl().book(a);
+export const joinWaitlist = (a) => impl().joinWaitlist(a);
+export const cancelBooking = (a) => impl().cancelBooking(a);
+export const addTag = (a) => impl().addTag(a);
+export { mock };

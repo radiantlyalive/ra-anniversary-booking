@@ -1,9 +1,12 @@
-// Scheduled. Runs every 15 minutes and acts only once, after reconfirm.deadlineAt.
-// Releases unconfirmed Full Day bookings, SKIPPING contributors (donor tag) when
-// contributions.contributorsKeepSpotIfNoReply is true. If reconfirm.release is
-// 'team-review', it only produces the list for the team instead of releasing.
-// Single-session bookings are never released.
-import { notBuilt } from './_lib/http.js';
+// Scheduled every 15 minutes. Acts once, after reconfirm.deadlineAt (config, UTC internally).
+// Releases unconfirmed Full Day bookings, skipping confirmed guests and contributors (when
+// contributorsKeepSpotIfNoReconfirm is true). release 'team-review' only builds the list.
+// Single-session bookings are never released. See service.runDeadline.
+import { runDeadline } from './_lib/service.js';
 
-export default async () => notBuilt('deadline');
+export default async () => {
+  const r = await runDeadline();
+  console.log('deadline job:', JSON.stringify(r));
+  return new Response(JSON.stringify(r), { headers: { 'content-type': 'application/json' } });
+};
 export const config = { schedule: '*/15 * * * *' };

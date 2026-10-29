@@ -1,79 +1,91 @@
-// Event settings. Every value marked OPEN is waiting on Rafa: do not "fix" it in code.
-// Change it here once decided, and update docs/decisions.md in the same commit.
+// ONE config file for the anniversary booking system.
+//
+// Every decision still waiting on Rafa is an OPEN(...) placeholder with value: null.
+// Nothing here picks a side. In sandbox and live mode the functions refuse to run
+// while any placeholder is null (run `npm run check:config` to list them).
+// In mock mode only, config/demo.values.js fills the gaps so the demo runs. Those
+// demo values are NOT decisions.
+//
+// When Rafa decides: put the value here, note the date and who decided in
+// docs/decisions.md, same commit.
 
-export const OPEN = (value, note) => ({ value, open: true, note });
+export const OPEN = (id, note) => ({ open: true, id, note, value: null });
 
+// ---- Fixed facts (from the brief, not open) -------------------------------------------
 export const event = {
   name: 'Move Beyond Your Self: RA Anniversary',
   date: '2026-12-01',
-  timezone: 'Asia/Makassar', // Bali, WITA, UTC+8
+  timezone: 'Asia/Makassar', // Bali, WITA, UTC+8. Stored in UTC, shown in Bali time.
   starts: '08:15',
   ends: '19:00',
   venue: 'Radiantly Alive, Ubud',
-
-  // P1. Deck: 8 November (with the identity launch). Proposal: 12 November.
-  bookingOpens: OPEN('2026-11-08T00:00:00+08:00', 'P1: 8 Nov (deck) or 12 Nov (proposal)'),
 };
 
 export const fullDay = {
-  momenceSessionId: null, // from Studio ops
-  capacity: 50,
+  key: 'full-day',
+  capacity: 50, // enforced by Momence, mirrored here for display and the mock
   waitlist: true,
   requireWholeDayTick: true,
+  momenceSessionId: null, // from Studio ops, needed outside mock mode
 };
-
-// P2. Deck names the sessions with capacities. Proposal: "Session 1, 2, 3", no cap.
-// Set capacity to null for "no cap". reserveAhead mirrors the deck wording.
-export const singleSessions = OPEN([
-  { key: 'ra-vinyasa',   label: 'RA Vinyasa',             time: '09:00 to 10:30', place: 'Upper Shala',  capacity: 30,   reserveAhead: true,  momenceSessionId: null },
-  { key: 'hatha',        label: 'Hatha',                  time: '11:00 to 12:30', place: 'River Shala',  capacity: 70,   reserveAhead: false, momenceSessionId: null },
-  { key: 'inside-flow',  label: 'Inside Flow',            time: '14:30 to 15:45', place: 'Jungle Shala', capacity: 30,   reserveAhead: true,  momenceSessionId: null },
-  { key: 'yin-sound',    label: 'Yin and Sound workshop', time: '15:00 to 17:30', place: 'Upper Shala',  capacity: null, reserveAhead: false, momenceSessionId: null, note: 'within capacity, to confirm' },
-  { key: 'vinyasa-krama',label: 'Vinyasa Krama',          time: '16:00 to 17:15', place: 'River Shala',  capacity: 70,   reserveAhead: false, momenceSessionId: null },
-], 'P2: deck sessions with caps, or proposal "Session 1, 2, 3" with no cap');
-
-export const contributions = {
-  // P3. Deck: all donations go to Sari Hati. Proposal: RA "contribution".
-  recipient: OPEN('Sari Hati', 'P3: Sari Hati (deck) or Radiantly Alive (proposal)'),
-  word: OPEN('donation', 'P3: "donation" or "contribution" (finance, charity status)'),
-  stripeProductName: OPEN('Anniversary 2026 contribution', 'P3'),
-  currency: OPEN('IDR', 'Proposal decision 2'),
-  suggestedAmounts: OPEN([100000, 250000, 500000], 'Proposal decision 2: placeholders'),
-  minimumOther: 10000,
-  refundWording: OPEN(null, 'Proposal decision 3'),
-  contributorsKeepSpotIfNoReply: OPEN(true, 'Proposal decision 5: recommended yes'),
-};
-
-// P4. Deck: single sessions by donation OR class credit. Proposal: no class credit.
-export const classCredit = OPEN({ enabled: false }, 'P4: offer class credit for single sessions?');
-
-// P6. Deck: optional meal package, IDR 100,000 to 150,000. Not in the proposal.
-export const mealPackage = OPEN({ enabled: false, priceIdr: null }, 'P6: include, final price, how it is paid');
-
-// P5. Deck adds a final confirmation the morning before. Proposal ends 28 Nov 12:00.
-export const reconfirm = OPEN({
-  emailAt:    '2026-11-26T09:00:00+08:00',
-  reminderAt: '2026-11-27T09:00:00+08:00',
-  deadlineAt: '2026-11-28T12:00:00+08:00',
-  dayBeforeFinalConfirm: false,
-  release: 'automatic', // or 'team-review' (proposal decision 4)
-}, 'P5 and proposal decision 4');
 
 export const momenceTags = {
-  donor: 'Anniversary 2026 – Donor',       // must already exist in Momence; the API cannot create tags
+  // Must already exist in Momence: the API can assign tags but not create them.
+  donor: 'Anniversary 2026 – Donor',
   confirmed: 'Anniversary 2026 – Confirmed',
 };
 
-// Lists every OPEN value, for the README check and the demo page banner.
-export function openItems() {
-  const all = { event, singleSessions, contributions, classCredit, mealPackage, reconfirm };
-  const out = [];
-  const walk = (obj, path) => {
-    if (obj && typeof obj === 'object') {
-      if (obj.open) { out.push({ path, note: obj.note }); return; }
-      for (const [k, v] of Object.entries(obj)) walk(v, path ? `${path}.${k}` : k);
-    }
-  };
-  walk(all, '');
-  return out;
+export const limits = {
+  minimumOtherAmount: 10000, // IDR 10,000, from the brief. Applies to the "Other" amount.
+  bookPerIp: { limit: 10, windowSec: 600 },
+  contributePerIp: { limit: 10, windowSec: 600 },
+  maximumAmount: 100000000, // sanity guard on a typed amount, in whole currency units. Not a decision: adjust if the currency changes.
+};
+
+// ---- Open decisions: waiting on Rafa --------------------------------------------------
+export const open = {
+  // 1. Booking opening date. Deck: 8 November. Proposal: 12 November.
+  bookingOpens: OPEN('P1', 'Booking opening date (ISO with offset, e.g. 2026-11-08T00:00:00+08:00). Deck says 8 Nov, proposal says 12 Nov.'),
+
+  // 2. Single sessions. Deck: named sessions with capacities (RA Vinyasa about 30, reserve
+  //    ahead; Hatha 70; Inside Flow 30; Vinyasa Krama 70; Yin and Sound within capacity).
+  //    Proposal: "Session 1, 2, 3", no cap.
+  //    Shape: { waitlistPerSession: boolean,
+  //             list: [{ key, label, time, place?, capacity: number|null, momenceSessionId }] }
+  //    capacity null = no cap. With waitlistPerSession true, a full session offers its own waitlist.
+  singleSessions: OPEN('P2', 'Single sessions: names, times, per-session caps (or none), waitlist per session on or off.'),
+
+  // 3. Where donations go and the wording. Deck: all donations go to Sari Hati.
+  //    Proposal: "Radiantly Alive · Anniversary 2026 contribution". "Donation" vs "contribution".
+  //    Shape: { word: 'donation'|'contribution', recipientLine: string, productName: string }
+  contributions: OPEN('P3', 'Donation vs contribution wording, who receives it, the label guests see, the Stripe product name.'),
+
+  // 4. Class credit as a payment option for single sessions. Deck: yes. Proposal: absent.
+  //    Stubbed path, disabled by default. Enabling it needs a Momence credits endpoint (not read yet).
+  classCredit: OPEN('P4', 'Class credit for single sessions. Stub only: { enabled: false } until decided.'),
+
+  // 5. Reconfirm schedule. Deck adds a final confirmation the morning before the day.
+  //    Proposal: email 26 Nov, reminder 27 Nov, deadline Sat 28 Nov 12:00 (WITA).
+  //    Shape: { emailAt, reminderAt, deadlineAt, finalConfirmAt: ISO|null,
+  //             release: 'automatic'|'team-review' }
+  //    The emails themselves are Klaviyo flows. emailAt, reminderAt and finalConfirmAt are
+  //    kept here for the docs and the demo; the deadline job uses deadlineAt and release.
+  reconfirm: OPEN('P5', 'Reconfirm dates and times, optional day-before confirmation, release automatic vs team review.'),
+
+  // 6. Optional meal package, IDR 100,000 to 150,000 (deck). Not in the proposal.
+  //    Stubbed, disabled step. Shape: { enabled: false, priceIdr: number|null }
+  mealPackage: OPEN('P6', 'Meal package: include, final price, how it is paid. Stub only until decided.'),
+
+  // 7. Currency, suggested amounts, refund wording, and who keeps a spot at the deadline.
+  //    Shape: { currency, suggestedAmounts: number[], refundWording: string|null,
+  //             contributorsKeepSpotIfNoReconfirm: boolean }
+  amounts: OPEN('D2-D5', 'Currency, suggested amounts, refund wording, whether contributors keep their spot if they miss the reconfirm.'),
+
+  // Where the widget lives. Slug and page architecture are Rafa's call.
+  eventPageUrl: OPEN('S1', 'Public URL of the anniversary event page (Stripe returns guests here).'),
+};
+
+// Open placeholders list, for the README check, the demo banner and check:config.
+export function openItems(tree = open) {
+  return Object.entries(tree).map(([path, o]) => ({ path, id: o.id, note: o.note, filled: o.value !== null }));
 }

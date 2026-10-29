@@ -1,11 +1,17 @@
-// GET /api/spots -> { fullDay: { left, capacity, waiting }, bookingOpen }
-// Feeds the live counter in the widget. Cache for a few seconds at most.
-import { json, preflight } from './_lib/http.js';
-import * as momence from './_lib/momence.js';
+// GET /api/spots
+// -> { mode, bookingOpen, opensAtDisplay, eventDateDisplay, deadlineDisplay,
+//      fullDay:{capacity,booked,left,waiting,full},
+//      sessions:[{key,label,time,place,capacity,left,full,waitlist}],
+//      contributions:{currency,suggestedAmounts,minimum,word,recipientLine,refundWording},
+//      features:{classCredit,mealPackage} }
+// Feeds the live counter and the form. Times arrive already formatted in Bali time.
+import { json, preflight, fail } from './_lib/http.js';
+import { safe } from './_lib/handler.js';
+import { publicState } from './_lib/service.js';
 
-export default async (req) => {
+export default safe(async (req) => {
   const pre = preflight(req); if (pre) return pre;
-  const s = await momence.spotsLeft('full-day'); // TODO: use fullDay.momenceSessionId outside mock mode
-  return json(200, { fullDay: s });
-};
+  if (req.method !== 'GET') return fail(405, 'method_not_allowed');
+  return json(200, await publicState(), { 'cache-control': 'public, max-age=5' });
+});
 export const config = { path: '/api/spots' };
