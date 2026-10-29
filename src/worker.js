@@ -27,7 +27,10 @@ const routes = {
 export default {
   async fetch(request, env) {
     store.useStore(store.doStore(env.STORE));
-    const handler = routes[new URL(request.url).pathname];
+    const { pathname } = new URL(request.url);
+    // Mock deploy only: the root opens the demo page. Sandbox and live have no page at /.
+    if (pathname === '/' && env.BOOKING_MODE === 'mock') return Response.redirect(new URL('/demo.html', request.url).href, 302);
+    const handler = routes[pathname];
     if (!handler) return preflight(request) || json(404, { error: 'not_found' });
     return handler(request);
   },
