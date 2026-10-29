@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RA anniversary booking: local demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ra-booking.css">
+<style>
+  body{ margin:0; padding:48px 16px; background:#FFFDEB; font-family:"Poppins",system-ui,sans-serif; font-size:17px; }
+  .wrap{ max-width:640px; margin:0 auto; }
+  .note{ font-size:13px; color:#5A162F; border-left:2px solid #EB9000; padding-left:12px; margin-bottom:32px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="note">Local demo, mock mode. Not the real page. Run <code>npm run dev</code> and open /demo.html.</p>
+  <div id="ra-booking" data-api="/api"></div>
+</div>
+<script src="ra-booking.js" defer></script>
+</body>
+</html>

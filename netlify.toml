@@ -1,0 +1,14 @@
+[build]
+  publish = "widget"
+  functions = "netlify/functions"
+
+[dev]
+  publish = "widget"
+  port = 8888
+
+# Functions declare their own paths (/api/...) and the deadline schedule in code.
+
+[[headers]]
+  for = "/ra-booking.*"
+  [headers.values]
+    Cache-Control = "public, max-age=300"

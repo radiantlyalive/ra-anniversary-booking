@@ -1,0 +1,17 @@
+{
+  "name": "ra-anniversary-booking",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Booking widget and Netlify functions for the Radiantly Alive anniversary, 1 December 2026. Draft scaffold.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "netlify dev",
+    "test": "node --test tests/*.test.js",
+    "check:momence": "node scripts/momence-checks.mjs"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  },
+  "dependencies": {}
+}
