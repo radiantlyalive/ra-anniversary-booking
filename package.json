@@ -13,7 +13,8 @@
     "pretest": "node scripts/build.mjs",
     "test": "RA_STORE=memory BOOKING_MODE=mock node --test tests/*.test.js",
     "check:config": "node scripts/check-config.mjs",
-    "check:momence": "node scripts/momence-checks.mjs"
+    "check:momence": "node scripts/momence-checks.mjs",
+    "test:e2e": "node tests/e2e/widget.e2e.mjs"
   },
   "dependencies": {
     "@netlify/blobs": "^8.1.0"

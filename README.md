@@ -4,7 +4,9 @@ Booking system for **Move Beyond Your Self: RA Anniversary**, Tuesday 1 December
 
 Guests book on the anniversary event page (Squarespace) for free, or with a donation. Every booking still lands in Momence, so the front desk, the 50-place Full Day cap and the waitlist work as they do today.
 
-> **Status: draft scaffold.** The structure, settings, brand styles, mock data and tests are in place. The booking, donation, webhook, reconfirm and deadline functions return `501 Not implemented` until they are built (see [Build plan](#build-plan)). Nothing here is connected to Momence, Stripe or Klaviyo yet, and nothing is on the live site.
+> **Status: booking flow built and tested in mock mode.** `npm run dev` serves a local demo with every widget state, and 91 tests cover booking, donation, waitlist, reconfirm and the deadline job. Nothing is connected to Momence, Stripe or Klaviyo, nothing is deployed, and the live site is untouched.
+>
+> **Not done:** the real Momence calls (only auth is documented; the other API pages have not been read), the move from Netlify to Cloudflare Workers (hosting is changing; the docs host was not reachable), and the manage and thank-you pages on Squarespace (see `docs/decisions.md`).
 
 Based on the proposal by Abraham (Marketing), 29 October 2026, and the anniversary content deck. Where the two disagree, the repo does not choose: see [Waiting on Rafa](#waiting-on-rafa).
 
@@ -17,7 +19,7 @@ Squarespace event page
   └─ code block: booking widget (widget/)
         │  fetch /api/...
         ▼
-Netlify functions (netlify/functions/)  ◄── webhooks from Momence and Stripe
+Functions (netlify/functions/, moving to Cloudflare Workers)  ◄── webhooks from Momence and Stripe
   ├─► Momence   bookings, Full Day cap 50, waitlist, member tags
   ├─► Stripe    donations only, on Stripe-hosted Checkout
   └─► Klaviyo   every guest email, triggered by events
@@ -48,34 +50,26 @@ Full step-by-step flows: [`docs/flows.md`](docs/flows.md).
 
 ```
 config/
-  event.config.js      every event setting; open decisions are wrapped in OPEN(...)
-  strings.en.js        every guest-facing line (all need Rafa's approval)
-netlify/functions/
-  spots.js             GET  /api/spots            live Full Day counter
-  book.js              POST /api/book             free booking or waitlist
-  contribute.js        POST /api/contribute       opens Stripe Checkout
-  stripe-webhook.js    POST /api/stripe-webhook   payment succeeded
-  momence-webhook.js   POST /api/momence-webhook  front-desk bookings, cancellations, waitlist moves
-  reconfirm.js         GET/POST /api/reconfirm    confirm page (GET changes nothing)
-  deadline.js          scheduled every 15 min, acts once after the deadline
-  _lib/                Momence, Stripe and Klaviyo clients (mock mode built in),
-                       http helpers, idempotency, in-memory mock store
+  event.config.js      every setting; open decisions are OPEN(...) placeholders with value null
+  demo.values.js       mock-mode demo values only (not decisions)
+  strings.en.js        every guest-facing line, each marked "needs Rafa approval"
+netlify/functions/     one file per endpoint, each declares its own /api path
+  spots, book, contribute, stripe-webhook, momence-webhook, reconfirm, deadline
+  dev.js               mock mode only: demo controls
+  _lib/                service.js (all booking logic), momence (mock + real), stripe, klaviyo,
+                       store, idempotency, ratelimit, signing, validate, time, config
 widget/
-  ra-booking.js        embeddable widget (skeleton: Full Day tab only)
-  ra-booking.css       RA-brand styles, all scoped to .ra-bk
-  demo.html            local demo page
-docs/
-  decisions.md         the "Waiting on Rafa" list
-  momence.md           Momence endpoints and webhooks (to fill from the API docs)
-  flows.md             booking and reconfirm flows
-  tracking.md          proposed GTM dataLayer events
-  embed.md             how to add the widget to Squarespace
+  ra-booking.js        embeddable widget, plain JavaScript
+  ra-booking.css       RA-brand styles, every selector starts .ra-bk
+  demo.html, demo.js, mock-stripe.html   local demo only
 scripts/
-  momence-checks.mjs   the three checks on the Momence test session
-tests/                 node:test, no extra dependencies
+  build.mjs            builds public/ (strings + widget in one script)
+  dev-server.mjs       local server, no Netlify CLI or login needed
+  check-config.mjs     lists decisions still waiting on Rafa
+  momence-checks.mjs   the three Momence checks (written, not run)
+tests/                 node:test, 91 tests, plus tests/e2e (browser check)
+docs/                  decisions, momence, flows, tracking, embed
 ```
-
----
 
 ## Run it locally
 
@@ -84,11 +78,13 @@ Needs Node 20 or later.
 ```bash
 npm install
 cp .env.example .env      # BOOKING_MODE=mock needs no keys
-npm run dev               # Netlify dev server on http://localhost:8888
+npm run dev               # http://localhost:8888/demo.html
 npm test
 ```
 
-Open `http://localhost:8888/demo.html`. In mock mode the Full Day counter reads from an in-memory store (13 of 50 booked).
+The demo page has the live flow (mock API), a preview of every widget state (booking form, form errors, single sessions, Full Day full, booking not open, amount step, Stripe handoff, thank-you, back from Stripe paid or abandoned, waitlisted, partly waitlisted, error states), the reconfirm page with confirmed and released, the emails Klaviyo would send, and the Momence mock. Mock state is kept in `.mock-data/` (git-ignored); the Reset button clears it.
+
+Browser check (Playwright, with `npm run dev` running): `npm run test:e2e`.
 
 ### Modes
 
@@ -102,7 +98,7 @@ Open `http://localhost:8888/demo.html`. In mock mode the Full Day counter reads 
 
 ## Environment variables
 
-All secrets live in **Netlify > Site configuration > Environment variables**. They never go in code, commits, chat or email. Names are listed in [`.env.example`](.env.example).
+All secrets live in the host's secret settings (Cloudflare Workers secrets once the move is done; Netlify until then). They never go in code, commits, chat or email. Names are listed in [`.env.example`](.env.example).
 
 | Variable | What it is | From |
 |---|---|---|
@@ -122,22 +118,31 @@ All secrets live in **Netlify > Site configuration > Environment variables**. Th
 
 ## Waiting on Rafa
 
-The repo does not decide these. Each is an `OPEN(...)` value in [`config/event.config.js`](config/event.config.js), and a test fails if one is silently removed. Details and status: [`docs/decisions.md`](docs/decisions.md).
+The repo does not decide these. Each is an `OPEN(...)` placeholder with value `null` in [`config/event.config.js`](config/event.config.js). In sandbox and live the app refuses to run while one is null (`npm run check:config`); in mock mode demo values fill the gaps. Full table with the deck and proposal side by side, plus extra questions the build raised: [`docs/decisions.md`](docs/decisions.md).
 
-| # | Decision | Deck | Proposal |
+| Id | Decision | Deck | Proposal |
 |---|---|---|---|
 | P1 | Booking opens | 8 November | 12 November |
-| P2 | Single sessions | Named sessions with capacities | "Session 1, 2, 3", no cap |
-| P3 | Where donations go, and the word | All to Sari Hati | RA "contribution" |
-| P4 | Class credit for single sessions | Yes | Not offered |
-| P5 | Reconfirm schedule | Adds a final confirmation the morning before | 26 Nov email, 27 Nov reminder, 28 Nov 12:00 deadline |
-| P6 | Meal package, IDR 100,000 to 150,000 | Optional | Not in the flow |
-| P7 | Automation layer | Zapier | Netlify functions (this repo) |
-| D2 to D6 | Amounts, refund wording, automatic release or team review, contributors keep their place, room-size caps | | Proposal's own questions |
+| P2 | Single sessions | Named, with capacities | "Session 1, 2, 3", no cap |
+| P3 | Where donations go, and the word | Sari Hati | RA "contribution" |
+| P4 | Class credit for single sessions | Yes | Absent (stub, off) |
+| P5 | Reconfirm schedule, release automatic or team review | Adds a morning-before confirmation | 26 Nov, 27 Nov, 28 Nov 12:00 |
+| P6 | Meal package, IDR 100,000 to 150,000 | Optional | Absent (stub, off) |
+| P7 | Automation layer | Zapier | New service in this repo |
+| D2-D5 | Currency, amounts, refund wording, contributors keep a spot if they miss the reconfirm | | Placeholders |
+| S1, S2 | Event page URL, slugs of the thank-you and manage pages | | Abe: `/anniversary/thank-you`, `/anniversary/manage` |
 
-The default values in config follow the deck where it is specific. They are placeholders, not decisions.
+## Tracking (proposed)
 
----
+GTM `dataLayer` events: `ra_bk_tab_change`, `ra_bk_form_submit`, `ra_bk_free_booking`, `ra_bk_donation_start`, `ra_bk_donation_paid`, `ra_bk_waitlist_join`, `ra_bk_reconfirm`, `ra_bk_release`, `ra_bk_error`. No personal data. GA4 is not configured here. Details: [`docs/tracking.md`](docs/tracking.md).
+
+## Hosting
+
+The first build targets Netlify functions. Hosting is moving to Cloudflare Workers (Abe's updated proposal): the booking logic and widget are plain web-standard code and port as is, while entry points, the scheduled deadline job (Cron Trigger), storage (Netlify Blobs to D1 or a Durable Object, undecided) and secrets change. The port waits on the Cloudflare docs, which the build session could not reach.
+
+## Not verified yet
+
+Stripe checkout fields and IDR minor units, the Klaviyo events API and the Blobs calls were written from memory because their docs were unreachable. Every Momence call except auth is unwritten (`docs/momence.md`). Run on sandbox keys before trusting any of it.
 
 ## Brand rules for the widget
 
@@ -171,7 +176,7 @@ The widget sits on radiantlyalive.com and follows RA brand law and the /home-2 c
 - [ ] One test session
 - [ ] Tags created by hand: "Anniversary 2026 – Donor" and "Anniversary 2026 – Confirmed" (the API can't create tags)
 - [ ] Webhooks for "session booked" and "booking cancelled"
-- [ ] Three checks run on the test session (`npm run check:momence`):
+- [ ] Three checks run on the test session (`npm run check:momence`, written, not run until test-session access is given):
   - Does a free booking respect the cap?
   - Does Momence send its own confirmation email?
   - Does the waitlist move up by itself?
@@ -187,7 +192,7 @@ The widget sits on radiantlyalive.com and follows RA brand law and the /home-2 c
 
 **Other**
 - [ ] Klaviyo private API key, and the flows for the events listed in [`netlify/functions/_lib/klaviyo.js`](netlify/functions/_lib/klaviyo.js)
-- [ ] Netlify team account linked to this repo
+- [ ] Hosting account linked to this repo (Cloudflare Workers, replacing Netlify)
 - [ ] **Squarespace Business plan or higher.** Without it, code-block JavaScript doesn't run and the widget can't go on the page. Confirm this first.
 
 ---
