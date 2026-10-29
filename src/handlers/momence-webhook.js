@@ -1,18 +1,17 @@
-// POST /api/momence-webhook   booked and cancelled events
+// POST /api/momence-webhook   session-booked and session-booking-cancelled events
 // Keeps Klaviyo complete for front-desk bookings and waitlist moves, and ignores every
 // session that is not an anniversary session (the studio has other classes).
 //
-// NOT DOCUMENTED YET: Momence's payload shape and whether it signs webhooks. Until
-// docs/momence.md says so:
-//   - the handler works on a normalised event (see service.handleMomenceEvent);
-//   - outside mock mode the payload parser throws momence_docs_needed (501);
-//   - the endpoint fails closed unless MOMENCE_WEBHOOK_SECRET is set, and then requires it in the
-//     x-ra-webhook-secret header or ?secret= query value. That is a shared secret, not a signature.
+// Mock mode: a normalised event in the body, optional shared secret (x-ra-webhook-secret or ?secret=).
+// Sandbox and live: Momence's own format. parseWebhook checks x-webhook-secret and the HMAC
+// x-webhook-signature, and fails closed (401). Retries carry the same x-webhook-reqeuest-id and are dropped.
+// UNKNOWN until the first sandbox delivery: the HMAC key and encoding (docs/momence.md).
 import { timingSafeEqual } from 'node:crypto';
 import { json, preflight, fail, readJson } from '../lib/http.js';
 import { safe } from '../lib/handler.js';
 import { isMock } from '../lib/env.js';
-import { parseWebhook } from '../lib/momence-real.js';
+import * as store from '../lib/store.js';
+import { parseWebhook, webhookRequestId } from '../lib/momence-real.js';
 import { handleMomenceEvent } from '../lib/service.js';
 
 const same = (a, b) => { const x = Buffer.from(a), y = Buffer.from(b); return x.length === y.length && timingSafeEqual(x, y); };
@@ -27,9 +26,19 @@ function authorised(req) {
 export default safe(async (req) => {
   const pre = preflight(req); if (pre) return pre;
   if (req.method !== 'POST') return fail(405, 'method_not_allowed');
-  if (!authorised(req)) return fail(401, 'unauthorised');
+  if (isMock()) {
+    if (!authorised(req)) return fail(401, 'unauthorised');
+    const r = await handleMomenceEvent(await readJson(req, 65536));
+    return json(r.status, r.body);
+  }
   const body = await readJson(req, 65536);
-  const ev = isMock() ? body : parseWebhook(body);
+  let ev;
+  try { ev = await parseWebhook(body, req.headers); }
+  catch (e) { if (e?.code === 'bad_webhook') return fail(401, 'unauthorised'); throw e; }
+  if (ev.ignored) return json(200, { ignored: ev.ignored });
+  const reqId = webhookRequestId(req.headers);
+  if (reqId && (await store.get(`mw:${reqId}`))) return json(200, { duplicate: true });
   const r = await handleMomenceEvent(ev);
+  if (reqId && r.status < 300) await store.set(`mw:${reqId}`, 1); // marked after success so a failed delivery can retry
   return json(r.status, r.body);
 });

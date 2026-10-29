@@ -1,7 +1,7 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { fresh } from './helpers.js';
-import { getAccessToken, BASE, MomenceDocsNeeded, findOrCreateMember, book, parseWebhook } from '../src/lib/momence-real.js';
+import { getAccessToken, BASE } from '../src/lib/momence-real.js';
 
 process.env.MOMENCE_CLIENT_ID = 'cid'; process.env.MOMENCE_CLIENT_SECRET = 'csecret';
 process.env.MOMENCE_USERNAME = 'booking-page@example.com'; process.env.MOMENCE_PASSWORD = 'pw';
@@ -56,10 +56,4 @@ test('if the refresh fails, it falls back to the password grant', async () => {
 test('a failed token request is an error, and no secret appears in it', async () => {
   const f = fakeFetch({ ok: false, status: 401, body: {} });
   await assert.rejects(getAccessToken({ fetchImpl: f }), (e) => /401/.test(e.message) && !/csecret|pw/.test(e.message));
-});
-
-test('endpoints that are not documented yet refuse instead of guessing', async () => {
-  await assert.rejects(findOrCreateMember(), MomenceDocsNeeded);
-  await assert.rejects(book(), MomenceDocsNeeded);
-  assert.throws(() => parseWebhook(), MomenceDocsNeeded);
 });

@@ -1,5 +1,5 @@
 // The three Momence checks the proposal needs, run on a TEST session only. NOT RUN: it waits for
-// test-session access, and the real Momence calls are not written yet (docs/momence.md).
+// test-session access (the real calls are written in src/lib/momence-real.js, never run against Momence).
 //
 //   Check 1  does a free booking respect the cap?
 //   Check 2  does Momence send its own confirmation email? (a person reads the test inbox)
@@ -10,6 +10,9 @@
 // used as you+ra-check-1@example.com), and --yes. It creates test members and bookings in that session.
 // Self-test of this script's logic against the mock: BOOKING_MODE=mock node scripts/momence-checks.mjs --self-test
 import * as momence from '../src/lib/momence.js';
+import * as store from '../src/lib/store.js';
+
+store.useStore(store.memoryStore()); // outside the Worker: token cache and mock state live in memory for this run
 
 const self = process.argv.includes('--self-test');
 if (self) process.env.BOOKING_MODE = 'mock';
@@ -30,7 +33,7 @@ if (s.capacity == null || s.capacity > (self ? 50 : 5)) { console.error(`Test se
 const booked = [];
 let n = 0;
 while ((await momence.getSession(key)).left > 0) { n++; const m = await member(n); const b = await momence.book({ memberId: m.id, sessionKey: key }); if (!b.ok) break; booked.push(b.bookingId); }
-const over = await momence.book({ memberId: (await member(++n)).id, sessionKey: key });
+const over = await momence.book({ memberId: (await member(++n)).id, sessionKey: key, enforceCap: false }); // enforceCap:false so this tests Momence, not our own guard
 report.check1 = over.ok ? 'FAIL: booking accepted beyond capacity' : `PASS: refused beyond capacity (${over.reason})`;
 
 // Check 3: put a guest on the waitlist, cancel one booking, then watch for the guest to be booked by Momence.

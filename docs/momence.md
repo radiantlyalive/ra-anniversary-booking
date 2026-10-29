@@ -6,6 +6,8 @@ Rule: nothing below is assumed. Anything marked UNKNOWN waits for the docs or fo
 
 Base URL: `https://api.momence.com`
 
+Status 2026-10-29: the client in `src/lib/momence-real.js` is written against this page and tested with a fake Momence only. Nothing has been run against Momence.
+
 ## Auth (documented)
 
 Two credentials are involved:
@@ -118,8 +120,8 @@ Request: `POST`, JSON body with one property, `payload`, which is itself a JSON 
 
 Inner JSON: `timestamp` (ISO 8601), `event`, `payload` (event specific).
 
-### CONFLICT between two Momence pages (flagged, not resolved)
-The Basics page example shows the event name `session.booked` (dot). The Events Reference lists `session-booked` (hyphen) and hyphens for every event. Rafa, or the first real delivery, settles it. Until then do not match on one spelling only and do not guess.
+### CONFLICT between two Momence pages
+The Basics page example shows the event name `session.booked` (dot). The Events Reference lists `session-booked` (hyphen) and hyphens for every event. Haidar chose `session-booked` on 2026-10-29; Rafa has not reconciled it. The handler accepts only the hyphen spelling.
 
 ### Events the build needs
 - `session-booked`: `payload` = `sessionId`, `sessionBookingId`, `payingMemberId`, `targetMemberId` (all integers, all required). Fires for any booking, including automatic and child bookings.
